@@ -12,8 +12,16 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "R", function()
 end)
 hs.alert.show("Config loaded")
 
+----------------------------------------------------------------------------------------------
+-- load some spoons
 hs.loadSpoon("ReloadConfiguration")
 spoon.ReloadConfiguration:start()
+
+-- hs.loadSpoon("SpoonInstall")
+-- spoon.SpoonInstall:start()
+
+hs.loadSpoon("TextClipboardHistory")
+spoon.TextClipboardHistory:start()
 
 ----------------------------------------------------------------------------------------------
 -- hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
