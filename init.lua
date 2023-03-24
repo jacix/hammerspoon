@@ -20,8 +20,8 @@ spoon.ReloadConfiguration:start()
 -- hs.loadSpoon("SpoonInstall")
 -- spoon.SpoonInstall:start()
 
-hs.loadSpoon("TextClipboardHistory")
-spoon.TextClipboardHistory:start()
+hs.loadSpoon("ClipboardTool")
+spoon.ClipboardTool:start()
 
 ----------------------------------------------------------------------------------------------
 -- hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
