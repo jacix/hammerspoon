@@ -32,7 +32,12 @@ hs.loadSpoon("FadeLogo"):start()
 -- hs.loadSpoon("ReloadConfiguration"):start()
 Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hyper, "R" } }})
 
-hs.loadSpoon("ClipboardTool"):start()
+Install:andUse("ClipboardTool", {
+  config = { menubar_title = "\u{1f4ce}",
+             hist_size = 250},
+  hotkeys = { show_clipboard = { hyper, "V" }}
+  })
+spoon.ClipboardTool:start()
 
 Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
 
