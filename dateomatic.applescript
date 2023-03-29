@@ -10,7 +10,7 @@ else if ((text returned of theResponse) = "h") then
 else if ((text returned of theResponse) = "dh") then
     do shell script "/bin/date +%Y%m%d.%H%M"
 else if ((text returned of theResponse) = "ddhh") then
-    do shell script "/bin/date +%Y-%m-%d.%H:%M"
+    do shell script "/bin/date +%Y-%m-%d.%H%M"
 else
     display dialog "WTF is this: -> " & (text returned of theResponse)
 end if
