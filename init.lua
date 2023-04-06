@@ -21,6 +21,9 @@ ctrl_cmd    = {"cmd","ctrl"}
 -- load some spoons
 hs.loadSpoon("SpoonInstall")
 Install=spoon.SpoonInstall
+-- update the default spoons repo (hammerspoon.org/Spoons)
+Install:updateRepo('default')
+-- aka: spoon.SpoonInstall:updateRepo('default')
 
 hs.loadSpoon("FadeLogo"):start()
 
@@ -36,6 +39,30 @@ spoon.ClipboardTool:start()
 
 Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
 
+----------------------------------------------------------------------------------------------
+-- pull items from keychain
+-- the following two lines could be replaced by: Install:andUse("Keychain")
+spoon.SpoonInstall:installSpoonFromRepo("Keychain")
+hs.spoons.use("Keychain")
+
+----- recursive binder - this is going to take more time to grok
+-- https://nethuml.github.io/posts/2022/04/hammerspoon-global-leader-key/
+Install:installSpoonFromRepo("RecursiveBinder")
+local recursives = require("recursives")
+--[[
+spoon.RecursiveBinder.helperFormat = {
+    atScreenEdge = 2,  -- Bottom edge (default value)
+    textStyle = {  -- An hs.styledtext object
+	font = {
+	    name = "Fira Code",
+	    size = 18
+	}
+    }
+}
+--]]
+
+
+--[[
 ht=hs.loadSpoon("HammerText")
 ht.keywords={
   [ "ddd." ] = function() return os.date("%Y-%m-%d") end,
@@ -48,6 +75,7 @@ ht.keywords={
   [ "awsca."] = "aws.teladoc.com",
   [ "awsdk."] = "aws.teladoc.dk",
 }
+--]]
 
 hs.loadSpoon("AClock")
 spoon.AClock:init() hs.hotkey.bind({"cmd", "alt", "ctrl"}, "C", "A Clock", function()
@@ -134,7 +162,9 @@ if myhostname == "REM-JasonSchechner" then
      local workstuff = require('worktools')
 end
 
+--[[
 ht:start()
+--]]
 
 --[[ basement: Stuff to keep as a reference
 ---------- hello world --------------------

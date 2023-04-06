@@ -1,19 +1,28 @@
 -- hammerspoon stuff only necessary at work
+--
+-- change log
+--   2023-04-06 - teams-linkenator: use 2x shift-tab instead of 1 tab because teams-chat and teams-teams behavior is different
+--              - teams-linkenator: wait 850ms after pasting to allow for teams-teams' glacial URL check
+--
 hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
 -- take a URL from the clipboard and make a Teams-friendly hyperlink
 -- to do:
 -- * detect whether there's a URL in the pasteboard
 -- * detect app in focus and change output accordingly
+-- * Figure out how to click in the tex box in the Teams window after creating a link.
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Teams link-enator", function()
   mypasteboard = hs.pasteboard.getContents()
+  focused_window = hs.window.focusedWindow()
   _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
   hs.eventtap.keyStroke({"cmd"}, "k")
   hs.eventtap.keyStrokes(tag)
-  -- hs.timer.usleep(20000)
-  hs.eventtap.keyStroke({}, "tab")
+  hs.eventtap.keyStroke({"shift"}, "tab")
+  hs.eventtap.keyStroke({"shift"}, "tab")
   hs.eventtap.keyStrokes(mypasteboard)
+  hs.timer.usleep(850000)
   hs.eventtap.keyStroke({}, "return")
+  focused_window:focus()
 end)
 
 
