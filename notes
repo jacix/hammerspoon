@@ -1,0 +1,35 @@
+https://nikhilism.com/post/2021/useful-hammerspoon-tips/
+* goodies like creating a nag screen, jira hyperlinking (the opposite of what I'm trying to do), zoom push-to-talk
+
+https://zzamboni.org/post/just-enough-lua-to-be-productive-in-hammerspoon-part-1
+* lua
+
+https://zzamboni.org/post/using-spoons-in-hammerspoon
+* tips and basics
+
+https://nethuml.github.io/posts/2022/04/hammerspoon-global-leader-key/
+* leader key.  Need to think about this one
+
+====================================================================
+tips
+show a table: hs.inspect(table)
+
+====================================================================
+log
+========
+2023-03-29 - installed spoon Keychain via SpoonInstall
+  > spoon.SpoonInstall:updateRepo('default')
+  2023-03-29 02:29:40: -- Loading extension: http
+  2023-03-29 02:29:41: -- Loading extension: json
+  true
+
+  > spoon.SpoonInstall:installSpoonFromRepo("Keychain")
+  true
+
+Fetch a password from keychain using spoon Keychain
+  $ spoon.Keychain:getItem{account="jschechner",comment="freeipaprod",label="freeipa",service="ssh"}.password
+    * keychain access app ("security find-gener-cipassword" command line arg) -> field_in_spoon
+    * account (-a) -> account
+    * comment  (-j) -> comment
+    * name (-l) -> label
+    * where (-s) -> service
