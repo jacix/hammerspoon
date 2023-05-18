@@ -1,9 +1,10 @@
--- hammerspoon stuff only necessary at work
---
--- change log
---   2023-04-06 - teams-linkenator: use 2x shift-tab instead of 1 tab because teams-chat and teams-teams behavior is different
---              - teams-linkenator: wait 850ms after pasting to allow for teams-teams' glacial URL check
---
+--[[ hammerspoon stuff only necessary at work
+change log
+  2023-04-06 - teams-linkenator: use 2x shift-tab instead of 1 tab because teams-chat and teams-teams behavior is different
+             - teams-linkenator: wait 850ms after pasting to allow for teams-teams' glacial URL check
+  2023-05-16 - add hyper-j to print my email address
+--]]
+
 hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
 -- take a URL from the clipboard and make a Teams-friendly hyperlink
@@ -48,5 +49,9 @@ function pingResult(object, message, seqnum, error)
 end
 hs.network.ping.ping("telapp1.aws2.teladoc.com", 3, 0.2, 1.0, "any", pingResult)
 
+-- print my email address
+hs.hotkey.bind(hyper, "J", "my email", function()
+  hs.eventtap.keyStrokes(my_email)
+end)
 ----------------------------------------------------------------------------------------------
 

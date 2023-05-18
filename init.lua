@@ -1,6 +1,4 @@
---[[
-Jason's hammerspoon hotkeys
-
+--[[ Jason's hammerspoon hotkeys
 change log:
   2023-03-20 - initial creation with R=reload, W=notify, Q=alert, C=clock
   2023-03-22 - added T=Teams linkinator
@@ -8,6 +6,7 @@ change log:
                changed output and hotkey for sleep-checker from hyper-Y to hyper-S
                hyper-V brings up clipboard manager
   2023-03-25 - split out worktools.lua, much cleanup
+  2023-05-16 - add variable "my_email" here; currently used in worktools.lua
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -15,6 +14,7 @@ change log:
 hyper       = {"cmd","alt","ctrl"}
 shift_hyper = {"cmd","alt","ctrl","shift"}
 ctrl_cmd    = {"cmd","ctrl"}
+my_email    = "jason.schechner@teladochealth.com"
 -- work_logo = hs.image.imageFromPath(hs.configdir .. "/files/work_logo_2x.png")
 
 ----------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ Install:updateRepo('default')
 hs.loadSpoon("FadeLogo"):start()
 
 -- hs.loadSpoon("ReloadConfiguration"):start()
-Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hyper, "R" } }})
+Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hyper, "R" }, "Reload" }})
 
 Install:andUse("ClipboardTool", {
   config = { menubar_title = "\u{1f4ce}",
