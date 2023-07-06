@@ -36,3 +36,4 @@ Jason's public hammerspoon scripts - last updated 2023-03-25
 
 ## ```worktools.lua``` - things applicable only for work
   * ```ctrl```-```opt```-```cmd```-```T``` => take a URL from the pasteboard and create a prettified hyperlink in Teams
+  * ```ctrl```-```opt```-```cmd```-```J``` => print my work email address
