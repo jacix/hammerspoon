@@ -7,6 +7,7 @@ change log:
                hyper-V brings up clipboard manager
   2023-03-25 - split out worktools.lua, much cleanup
   2023-05-16 - add variable "my_email" here; currently used in worktools.lua
+  2023-07-06 - add "Jason Schechner Y3WLD0C6NF" as alternate hostname for work laptop for loading worktools
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -158,7 +159,7 @@ end)
 ----------------------------------------------------------------------------------------------
 -- determine my hostname, so I know what to load
 myhostname = hs.host.localizedName()
-if myhostname == "REM-JasonSchechner" then
+if myhostname == "REM-JasonSchechner" or myhostname == "Jason Schechner Y3WLD0C6NF" then
      local workstuff = require('worktools')
 end
 
