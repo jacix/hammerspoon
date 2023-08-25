@@ -3,6 +3,7 @@ change log
   2023-04-06 - teams-linkenator: use 2x shift-tab instead of 1 tab because teams-chat and teams-teams behavior is different
              - teams-linkenator: wait 850ms after pasting to allow for teams-teams' glacial URL check
   2023-05-16 - add hyper-j to print my email address
+  2023-08-25 - add hyper-a for aws-confluence linkeneator
 --]]
 
 hs.alert.show("Loading work tools")
@@ -23,6 +24,20 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Teams link-enator", function()
   hs.eventtap.keyStrokes(mypasteboard)
   hs.timer.usleep(850000)
   hs.eventtap.keyStroke({}, "return")
+  focused_window:focus()
+end)
+
+----------------------------------------------------------------------------------------------
+-- take an AWS URL from the clipboard and make a confluence-friendly hyperlink
+-- to do:
+-- * detect whether there's an AWS URL in the pasteboard
+-- * detect app in focus and change output accordingly
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "A", "AWS-confluence link-enator", function()
+  mypasteboard = hs.pasteboard.getContents()
+  focused_window = hs.window.focusedWindow()
+  tag = string.match(mypasteboard, ".*=.*=(.*[0-9a-z])")
+  hs.timer.usleep(75000)
+  hs.eventtap.keyStrokes("["..tag.."|"..mypasteboard.."]")
   focused_window:focus()
 end)
 
