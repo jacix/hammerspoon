@@ -7,7 +7,7 @@ change log
   2024-01-03 - teams link-enator: add 50ms sleep after cmd-k and shift-tabs, change 850ms to 500ms before 'return'
   2024-01-17 - add URL dropFortinet; change ping from telapp1 to jump1
   2024-01-23 - linkenator: make links in Outlook; detect https? in clipboard or missing URL or missing tag
-  2024-01-24 - linkenator: make links in confluence
+  2024-01-24 - linkenator: make links in confluence; dropFortinet uses app instead of menubar icon; add connectFortinet URL
 --]]
 
 hs.alert.show("Loading work tools")
@@ -113,32 +113,82 @@ hs.hotkey.bind(hyper, "J", "my email", function()
 end)
 ----------------------------------------------------------------------------------------------
 -- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
-hs.urlevent.bind("dropFortinet",function(eventName, params)
+hs.urlevent.bind("dropFortinetold",function(eventName, params)
 --     fortiIcon = { x=1483; y=-1425 }
 --     fortiClick = { x=1485; y=-1380 }
 --     fortiConsole = { x=1485; y=-1200 }
-     fortiIcon = { x=1495; y=11 }
-     fortiClick = { x=1497; y=56 }
-     fortiConsole = { x=1497; y=236 }
-     -- get the original mouse location
-     oldmouse=hs.mouse.absolutePosition()
-     -- left click the fortinet icon, right-click disconnect
-     hs.eventtap.rightClick(fortiIcon)
-     hs.timer.usleep(500000)
-     hs.eventtap.leftClick(fortiClick)
-     -- bring up the console and quit it
-     hs.timer.usleep(500000)
-     hs.eventtap.rightClick(fortiIcon)
-     hs.timer.usleep(500000)
-     hs.eventtap.leftClick(fortiConsole)
-     hs.timer.usleep(500000)
-     frontapp=hs.application.frontmostApplication()
-     hs.timer.usleep(500000)
-     if frontapp:name() == "FortiClient" then
-       hs.eventtap.keyStroke({"cmd"}, "q")
-     else
-       hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
-     end
-     -- move the mouse back
-     hs.mouse.absolutePosition(oldmouse)
+  fortiIcon = { x=1495; y=11 }
+  fortiClick = { x=1497; y=56 }
+  fortiConsole = { x=1497; y=236 }
+  -- get the original mouse location
+  saveMouse=hs.mouse.absolutePosition()
+  -- left click the fortinet icon, right-click disconnect
+  hs.eventtap.rightClick(fortiIcon)
+  hs.timer.usleep(500000)
+  hs.eventtap.leftClick(fortiClick)
+  -- bring up the console and quit it
+  hs.timer.usleep(500000)
+  hs.eventtap.rightClick(fortiIcon)
+  hs.timer.usleep(500000)
+  hs.eventtap.leftClick(fortiConsole)
+  hs.timer.usleep(500000)
+  frontapp=hs.application.frontmostApplication()
+  hs.timer.usleep(500000)
+  if frontapp:name() == "FortiClient" then
+    hs.eventtap.keyStroke({"cmd"}, "q")
+  else
+    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
+  end
+  -- move the mouse back
+  hs.mouse.absolutePosition(saveMouse)
 end)
+
+hs.urlevent.bind("dropFortinet",function(eventName, params)
+  -- absolute position on the primary screen
+  fortiDisconnect = { x=975; y=630 }
+  saveMouse=hs.mouse.absolutePosition()
+  primaryScreen=hs.screen.primaryScreen()
+  hs.application.launchOrFocus("Forticlient")
+  fortinetWindow=hs.window.find("Forticlient")
+  fortinetWindow:centerOnScreen(primaryScreen)
+  hs.timer.usleep(500000)
+  frontapp=hs.application.frontmostApplication()
+  if frontapp:name() == "FortiClient" then
+    hs.eventtap.leftClick(fortiDisconnect)
+    hs.eventtap.keyStroke({"cmd"}, "q")
+  else
+    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
+  end
+  hs.mouse.absolutePosition(saveMouse)
+end)
+
+-- launch fortivpn and log in
+hs.urlevent.bind("connectFortinet",function(eventName, params)
+  fortiEndpointMenu = { x=987; y=537 }
+  fortiTierpoint = { x=957 ; y=600 }
+  mousePosition=hs.mouse.absolutePosition()
+  hs.application.launchOrFocus("Forticlient")
+  -- replace this with a wait-for-app-to-launch
+  hs.timer.usleep(1000000)
+  hs.eventtap.leftClick(fortiEndpointMenu)
+  hs.timer.usleep(500000)
+  hs.eventtap.leftClick(fortiTierpoint)
+  hs.timer.usleep(500000)
+  hs.eventtap.leftClick(fortiTierpoint)
+  -- send the mouse back to where it was
+  hs.timer.usleep(500000)
+  hs.mouse.absolutePosition(mousePosition)
+end)
+--[[
+----------------------------------------------------------------------------------------------
+-- raise Azure VPN window, hang up VPN and close it - 2024-01-24
+hs.urlevent.bind("dropAzureVPN",function(eventName, params)
+  --azure_vpn_app=hs.application.find("Azure VPN")
+  --azure_vpn_app=hs.application.find("com.microsoft.AzureVpnMac")
+  hs.application.open("com.microsoft.AzureVpnMac")
+  hs.application.launchOrFocus("Azure VPN Client")
+  azurevpnwindow=hs.window.find("Azure VPN")
+  hs.application.launchOrFocusByBundleID("com.microsoft.AzureVpnMac")
+  azurevpnwindow:centerOnScreen()
+end)
+]]--
