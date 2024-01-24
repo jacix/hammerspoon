@@ -6,29 +6,58 @@ change log
   2023-08-25 - add hyper-a for aws-confluence linkeneator
   2024-01-03 - teams link-enator: add 50ms sleep after cmd-k and shift-tabs, change 850ms to 500ms before 'return'
   2024-01-17 - add URL dropFortinet; change ping from telapp1 to jump1
+  2024-01-23 - linkenator: now make links in Outlook; detect https? in clipboard or missing URL or missing tag
 --]]
 
 hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
--- take a URL from the clipboard and make a Teams-friendly hyperlink
+-- take a URL from the clipboard and make an application-friendly hyperlink
 -- to do:
--- * detect whether there's a URL in the pasteboard
--- * detect app in focus and change output accordingly
 -- * Figure out how to click in the tex box in the Teams window after creating a link.
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Teams link-enator", function()
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
   mypasteboard = hs.pasteboard.getContents()
   focused_window = hs.window.focusedWindow()
+  focused_window_title = focused_window:title()
+  frontmost_app_title = hs.application.frontmostApplication():title()
   _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
-  hs.eventtap.keyStroke({"cmd"}, "k")
-  hs.timer.usleep(50000)
-  hs.eventtap.keyStrokes(tag)
-  hs.eventtap.keyStroke({"shift"}, "tab")
-  hs.eventtap.keyStroke({"shift"}, "tab")
-  hs.timer.usleep(50000)
-  hs.eventtap.keyStrokes(mypasteboard)
-  hs.timer.usleep(500000)
-  hs.eventtap.keyStroke({}, "return")
-  focused_window:focus()
+  badurl=nil
+  if url == nil then
+    url="(nil url)"
+    badurl=1
+  end
+  if tag == nil then
+    tag="(nil tag)"
+    badurl=1
+  end
+  if not mypasteboard:match("https?://") then
+    badurl=1
+  end
+    if badurl==1 then
+    hs.alert.show("Clipboard ain't right.\nclipboard: " .. mypasteboard .. "\nurl: " .. url .. "\ntag: " .. tag,4)
+    return
+  end
+  if frontmost_app_title:match("Microsoft Teams") then
+    hs.eventtap.keyStroke({"cmd"}, "k")
+    hs.timer.usleep(50000)
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({"shift"}, "tab")
+    hs.eventtap.keyStroke({"shift"}, "tab")
+    hs.timer.usleep(50000)
+    hs.eventtap.keyStrokes(mypasteboard)
+    hs.timer.usleep(500000)
+    hs.eventtap.keyStroke({}, "return")
+    focused_window:focus()
+  elseif focused_window_title:match("jason.schechner@teladoc.com") then
+    hs.eventtap.keyStroke({"cmd"}, "k")
+    hs.eventtap.keyStrokes(mypasteboard)
+    hs.eventtap.keyStroke({"shift"}, "tab")
+    hs.eventtap.keyStroke({"shift"}, "tab")
+    hs.eventtap.keyStroke({"shift"}, "tab")
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "return")
+  else
+    hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
+  end
 end)
 
 ----------------------------------------------------------------------------------------------
@@ -75,9 +104,12 @@ end)
 ----------------------------------------------------------------------------------------------
 -- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
 hs.urlevent.bind("dropFortinet",function(eventName, params)
-     fortiIcon = { x=1483; y=-1425 }
-     fortiClick = { x=1485; y=-1380 }
-     fortiConsole = { x=1485; y=-1200 }
+--     fortiIcon = { x=1483; y=-1425 }
+--     fortiClick = { x=1485; y=-1380 }
+--     fortiConsole = { x=1485; y=-1200 }
+     fortiIcon = { x=1495; y=11 }
+     fortiClick = { x=1497; y=56 }
+     fortiConsole = { x=1497; y=236 }
      -- get the original mouse location
      oldmouse=hs.mouse.absolutePosition()
      -- left click the fortinet icon, right-click disconnect

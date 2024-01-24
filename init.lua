@@ -9,6 +9,7 @@ change log:
   2023-05-16 - add variable "my_email" here; currently used in worktools.lua
   2023-07-06 - add "Jason Schechner Y3WLD0C6NF" as alternate hostname for work laptop for loading worktools
   2024-01-18 - add defeat paste blocking = opt-cmd-v
+  2024-01-18 - add spoon MicMute
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -47,6 +48,16 @@ Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
 spoon.SpoonInstall:installSpoonFromRepo("Keychain")
 hs.spoons.use("Keychain")
 
+-- works but no help in hyper-h
+Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
+
+-- works, and has help with hyper-h but displays two copies of the menu bar icon
+-- hs.loadSpoon("MicMute")
+-- hs.spoons.use("MicMute")
+-- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
+--   spoon.MicMute:toggleMicMute()
+-- end)
+
 ----- recursive binder - this is going to take more time to grok
 -- https://nethuml.github.io/posts/2022/04/hammerspoon-global-leader-key/
 Install:installSpoonFromRepo("RecursiveBinder")
@@ -63,22 +74,6 @@ spoon.RecursiveBinder.helperFormat = {
 }
 --]]
 
-
---[[
-ht=hs.loadSpoon("HammerText")
-ht.keywords={
-  [ "ddd." ] = function() return os.date("%Y-%m-%d") end,
-  [ "dd." ] = function() return os.date("%Y%m%d") end,
-  [ "hhh." ] = function() return os.date("%H:%M") end,
-  [ "hh." ] = function() return os.date("%H%M") end,
-  [ "dh." ] = function() return os.date("%Y%m%d.%H%M") end,
-  [ "ddhh." ] = function() return os.date("%Y-%m-%d.%H%M") end,
-  [ "awsus."]  = "aws2.teladoc.com",
-  [ "awsca."] = "aws.teladoc.com",
-  [ "awsdk."] = "aws.teladoc.dk",
-}
---]]
-
 hs.loadSpoon("AClock")
 spoon.AClock:init() hs.hotkey.bind({"cmd", "alt", "ctrl"}, "C", "A Clock", function()
   spoon.AClock:toggleShow()
@@ -91,8 +86,16 @@ hs.hotkey.showHotkeys({"cmd", "alt", "ctrl"}, "H")
 -- show the name of the front-most application. Good for troubleshooting.
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most application", function()
   frontmost_application = hs.application.frontmostApplication()
+  focused_window = hs.window.focusedWindow()
   frontmost_title = frontmost_application:title()
-  hs.alert.show(frontmost_application)
+  --hs.alert.show("frontmost_app title: " .. frontmost_application:title() .. "\nfocused_win title: " .. focused_window:title() .. "\n")
+  if frontmost_title:match("Microsoft Teams") then
+    hs.alert.show("partial match")
+  elseif frontmost_title == "Microsoft Teams (work or school)" then
+    hs.alert.show("Full name match")
+  else
+    hs.alert.show("frontmost_app title: " .. hs.application.frontmostApplication():title() .. "\nfocused_win title: " .. focused_window:title() .. "\n")
+  end
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts
@@ -104,27 +107,22 @@ function setCaffeineDisplay(state)
         caffeine:setTitle("zzz.")
     end
 end
-
 function caffeineClicked()
     setCaffeineDisplay(hs.caffeinate.toggle("displayIdle"))
 end
-
 if caffeine then
     caffeine:setClickCallback(caffeineClicked)
     setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end
-
 -- bind URLs "hammerspoon://{stayup,chill}"
 hs.urlevent.bind("stayup",function(eventName, params)
     hs.caffeinate.set("displayIdle",true)
     setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end)
-
 hs.urlevent.bind("chill",function(eventName, params)
     hs.caffeinate.set("displayIdle",false)
     setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end)
-
 -- HK to check whether sleep is enabled or not
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "S", "Is sleep disabled?", function()
   if hs.caffeinate.get("displayIdle") then
@@ -142,6 +140,21 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
   window_list = hs.window.allWindows()
   hs.alert.show(window_list)
 end)
+--]]
+
+--[[
+ht=hs.loadSpoon("HammerText")
+ht.keywords={
+  [ "ddd." ] = function() return os.date("%Y-%m-%d") end,
+  [ "dd." ] = function() return os.date("%Y%m%d") end,
+  [ "hhh." ] = function() return os.date("%H:%M") end,
+  [ "hh." ] = function() return os.date("%H%M") end,
+  [ "dh." ] = function() return os.date("%Y%m%d.%H%M") end,
+  [ "ddhh." ] = function() return os.date("%Y-%m-%d.%H%M") end,
+  [ "awsus."]  = "aws2.teladoc.com",
+  [ "awsca."] = "aws.teladoc.com",
+  [ "awsdk."] = "aws.teladoc.dk",
+}
 --]]
 
 ----------------------------------------------------------------------------------------------

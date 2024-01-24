@@ -14,6 +14,7 @@ https://nethuml.github.io/posts/2022/04/hammerspoon-global-leader-key/
 tips
 show a table: hs.inspect(table)
 iterate through a table: for index, value in next, oldmouse do print(index.. ": " .. value ) end
+find current mouse position: for index, value in next, hs.mouse.absolutePosition() do print(index.. ": " .. value ) end
 
 ====================================================================
 log
