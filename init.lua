@@ -10,6 +10,7 @@ change log:
   2023-07-06 - add "Jason Schechner Y3WLD0C6NF" as alternate hostname for work laptop for loading worktools
   2024-01-18 - add defeat paste blocking = opt-cmd-v
   2024-01-18 - add spoon MicMute
+  2024-01-24 - meta-F shows relative and absolute mouse positions
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -94,7 +95,7 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most application", function()
   elseif frontmost_title == "Microsoft Teams (work or school)" then
     hs.alert.show("Full name match")
   else
-    hs.alert.show("frontmost_app title: " .. hs.application.frontmostApplication():title() .. "\nfocused_win title: " .. focused_window:title() .. "\n")
+    hs.alert.show("frontmost_app title: " .. hs.application.frontmostApplication():title() .. "\nfocused_win title: " .. focused_window:title() .. "\n at relative\n" .. hs.inspect(hs.mouse.getRelativePosition()) .. "\n and absolute:\n" .. hs.inspect(hs.mouse.absolutePosition()), 4)
   end
 end)
 
