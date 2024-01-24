@@ -6,7 +6,8 @@ change log
   2023-08-25 - add hyper-a for aws-confluence linkeneator
   2024-01-03 - teams link-enator: add 50ms sleep after cmd-k and shift-tabs, change 850ms to 500ms before 'return'
   2024-01-17 - add URL dropFortinet; change ping from telapp1 to jump1
-  2024-01-23 - linkenator: now make links in Outlook; detect https? in clipboard or missing URL or missing tag
+  2024-01-23 - linkenator: make links in Outlook; detect https? in clipboard or missing URL or missing tag
+  2024-01-24 - linkenator: make links in confluence
 --]]
 
 hs.alert.show("Loading work tools")
@@ -54,6 +55,15 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
     hs.eventtap.keyStroke({"shift"}, "tab")
     hs.eventtap.keyStroke({"shift"}, "tab")
     hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "return")
+  elseif focused_window_title:match("CONFLUENCE DATA CENTER") then
+    hs.eventtap.keyStroke({"cmd"}, "k")
+    hs.timer.usleep(10000)
+    hs.eventtap.keyStrokes(mypasteboard)
+    hs.eventtap.keyStroke({}, "tab")
+    hs.timer.usleep(10000)
+    hs.eventtap.keyStrokes(tag)
+    hs.timer.usleep(10000)
     hs.eventtap.keyStroke({}, "return")
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
