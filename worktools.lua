@@ -8,8 +8,15 @@ change log
   2024-01-17 - add URL dropFortinet; change ping from telapp1 to jump1
   2024-01-23 - linkenator: make links in Outlook; detect https? in clipboard or missing URL or missing tag
   2024-01-24 - linkenator: make links in confluence; dropFortinet uses app instead of menubar icon; add connectFortinet URL
+  2024-01-24 - add URLs loginAzure and dropAzure
+  2024-01-25 - add URL vpnMenuItem to set VPN menu item based on which VPN is connected
+  2024-01-31 - connectForti sends ".t{return}" to select the right VPN endpoint
 --]]
 
+-- variables used by multiple bindings
+primaryScreen=hs.screen.primaryScreen()
+
+-- please allow me to introduce myself
 hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
 -- take a URL from the clipboard and make an application-friendly hyperlink
@@ -147,7 +154,6 @@ hs.urlevent.bind("dropFortinet",function(eventName, params)
   -- absolute position on the primary screen
   fortiDisconnect = { x=975; y=630 }
   saveMouse=hs.mouse.absolutePosition()
-  primaryScreen=hs.screen.primaryScreen()
   hs.application.launchOrFocus("Forticlient")
   fortinetWindow=hs.window.find("Forticlient")
   fortinetWindow:centerOnScreen(primaryScreen)
@@ -164,21 +170,91 @@ end)
 
 -- launch fortivpn and log in
 hs.urlevent.bind("connectFortinet",function(eventName, params)
+  -- variables
   fortiEndpointMenu = { x=987; y=537 }
   fortiTierpoint = { x=957 ; y=600 }
+  -- activities
   mousePosition=hs.mouse.absolutePosition()
   hs.application.launchOrFocus("Forticlient")
-  -- replace this with a wait-for-app-to-launch
+  -- replace this sleep with a wait-for-app-to-launch
   hs.timer.usleep(1000000)
   hs.eventtap.leftClick(fortiEndpointMenu)
   hs.timer.usleep(500000)
-  hs.eventtap.leftClick(fortiTierpoint)
-  hs.timer.usleep(500000)
+  -- hs.eventtap.leftClick(fortiTierpoint)
+  hs.eventtap.keyStrokes(".t")
+  hs.eventtap.keyStroke({}, "return")
+  hs.timer.usleep(600000)
   hs.eventtap.leftClick(fortiTierpoint)
   -- send the mouse back to where it was
+  hs.timer.usleep(600000)
+  hs.mouse.absolutePosition(mousePosition)
+end)
+
+hs.urlevent.bind("connectAzure",function(eventName, params)
+  -- variables
+  azureProdCommercialClick= { x=760; y=314 }
+  primaryScreen=hs.screen.primaryScreen()
+  -- activities
+  mousePosition=hs.mouse.absolutePosition()
+  hs.application.launchOrFocus("Azure VPN Client")
+  hs.timer.usleep(1000000)
+  azureVPNWindow=hs.window.find("Azure VPN Client")
+  azureVPNWindow:centerOnScreen(primaryScreen)
+  hs.timer.usleep(1000000)
+  hs.eventtap.leftClick(azureProdCommercialClick)
+  hs.timer.usleep(1000000)
+  hs.eventtap.leftClick(azureProdCommercialClick)
   hs.timer.usleep(500000)
   hs.mouse.absolutePosition(mousePosition)
 end)
+
+hs.urlevent.bind("dropAzure",function(eventName, params)
+  -- variables
+  azureProdCommercialClick= { x=760; y=314 }
+  primaryScreen=hs.screen.primaryScreen()
+  -- activities
+  mousePosition=hs.mouse.absolutePosition()
+  hs.application.launchOrFocus("Azure VPN Client")
+  hs.timer.usleep(500000)
+  azureVPNWindow=hs.window.find("Azure VPN Client")
+  hs.timer.usleep(500000)
+  azureVPNWindow:centerOnScreen(primaryScreen)
+  hs.timer.usleep(500000)
+  frontapp=hs.application.frontmostApplication()
+  if frontapp:name() == "Azure VPN Client" then
+    hs.eventtap.leftClick(azureProdCommercialClick)
+    hs.timer.usleep(500000)
+    hs.eventtap.keyStroke({"cmd"}, "q")
+  else
+    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
+  end
+  hs.mouse.absolutePosition(mousePosition)
+end)
+
+vpnMenuStatus=hs.menubar.new()
+vpnMenuStatus:setIcon("images/pad-lock-png-free-download-23_20x20.png")
+
+hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
+  -- hs.alert("I see params" .. hs.inspect(params))
+  if params["connected"] == "1" then
+    vpnMenuStatus:returnToMenuBar()
+    vpnMenuStatus:setTitle(params["service"])
+  else
+    vpnMenuStatus:removeFromMenuBar()
+  end
+end)
+
+--[[
+hs.urlevent.bind("vpnMenuItem",function(eventName,params)
+  -- usage: vpnMenuItem?connected=1&service=forti
+  hs.alert("I see params" .. hs.inspect(params))
+    vpnMenuStatus:returnToMenuBar()
+  else
+    vpnMenuStatus:removeFromMenuBar()
+    vpnMenuStatus:setTitle(params["service"])
+  end
+end)
+
 --[[
 ----------------------------------------------------------------------------------------------
 -- raise Azure VPN window, hang up VPN and close it - 2024-01-24
