@@ -11,6 +11,7 @@ change log
   2024-01-24 - add URLs loginAzure and dropAzure
   2024-01-25 - add URL vpnMenuItem to set VPN menu item based on which VPN is connected
   2024-01-31 - connectForti sends ".t{return}" to select the right VPN endpoint
+  2024-02-02 - connectForti waits for Forticlient to be active in 0.1s spurts instead of blindly sleeping for 2s
 --]]
 
 -- variables used by multiple bindings
@@ -176,7 +177,27 @@ hs.urlevent.bind("connectFortinet",function(eventName, params)
   -- activities
   mousePosition=hs.mouse.absolutePosition()
   hs.application.launchOrFocus("Forticlient")
-  -- replace this sleep with a wait-for-app-to-launch
+  while_counter = 0
+  local focusedWindow = hs.window.focusedWindow()
+  while (not focusedWindow or focusedWindow:title() ~= "FortiClient -- Zero Trust Fabric Agent")
+  do
+     while_counter=while_counter+1
+     focusedWindow = hs.window.focusedWindow()
+--[[
+     if focusedWindow then
+          print(while_counter .. " : hs.window.focusedWindow():title() = " .. hs.window.focusedWindow():title())
+     else
+          print(while_counter .. ": No focus.")
+     end
+     print(while_counter .. " : hs.application.frontmostApplication():title()" .. hs.application.frontmostApplication():title() .. "\n")
+--]]
+     hs.timer.usleep(100000)
+     if while_counter >= 100 then
+          print("Breaking out of watch loop")
+          break
+     end
+  end
+  print(while_counter .. " cycles")   
   hs.timer.usleep(1000000)
   hs.eventtap.leftClick(fortiEndpointMenu)
   hs.timer.usleep(500000)
