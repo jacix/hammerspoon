@@ -12,6 +12,7 @@ change log
   2024-01-25 - add URL vpnMenuItem to set VPN menu item based on which VPN is connected
   2024-01-31 - connectForti sends ".t{return}" to select the right VPN endpoint
   2024-02-02 - connectForti waits for Forticlient to be active in 0.1s spurts instead of blindly sleeping for 2s
+  2024-02-06 - add outlook-reminder closenheimer (hyper-O); add URLs for Teams mic and camera mute-o-matic
 --]]
 
 -- variables used by multiple bindings
@@ -91,7 +92,6 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "A", "AWS-confluence link-enator", functi
   hs.eventtap.keyStrokes("["..tag.."|"..mypasteboard.."]")
   focused_window:focus()
 end)
-
 
 -- Check if on VPN when HS starts, and if so, disable sleep
 -- courtesy of https://medium.com/@robhowlett/hammerspoon-the-best-mac-software-youve-never-heard-of-40c2df6db0f8
@@ -263,6 +263,24 @@ hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
   else
     vpnMenuStatus:removeFromMenuBar()
   end
+end)
+
+hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
+  reminders_window=hs.window.find("Reminders")
+  if reminders_window then
+    reminders_window:close()
+  else
+    hs.alert.show("What reminders? (hint: I can't find a reminders window.")
+  end
+end)
+
+
+hs.urlevent.bind("muteTeamsMic",function(eventName, params)
+  hs.eventtap.keyStroke({"cmd", "shift"}, "m",hs.application.find("Microsoft Teams"))
+end)
+
+hs.urlevent.bind("muteTeamsCam",function(eventName, params)
+  hs.eventtap.keyStroke({"cmd", "shift"}, "o",hs.application.find("Microsoft Teams"))
 end)
 
 --[[

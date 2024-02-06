@@ -11,6 +11,7 @@ change log:
   2024-01-18 - add defeat paste blocking = opt-cmd-v
   2024-01-18 - add spoon MicMute
   2024-01-24 - meta-F shows relative and absolute mouse positions
+  2024-02-06 - add "hs.application.enableSpotlightForNameSearches(true)"; add front-most window to hyper-F
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -81,22 +82,19 @@ spoon.AClock:init() hs.hotkey.bind({"cmd", "alt", "ctrl"}, "C", "A Clock", funct
 end)
 ----------------------------------------------------------------------------------------------
 -- general purpose stuff  --------------------------------------------------------------------
+-- enable Spotlight support
+hs.application.enableSpotlightForNameSearches(true)
 -- show registered hotkeys
 hs.hotkey.showHotkeys({"cmd", "alt", "ctrl"}, "H")
 
 -- show the name of the front-most application. Good for troubleshooting.
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most application", function()
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most app+window; focused window", function()
+  -- These calls can be made in alert.show, but for troubleshooting you can ref them in the console
   frontmost_application = hs.application.frontmostApplication()
+  frontmost_window = hs.window.frontmostWindow()
   focused_window = hs.window.focusedWindow()
-  frontmost_title = frontmost_application:title()
-  --hs.alert.show("frontmost_app title: " .. frontmost_application:title() .. "\nfocused_win title: " .. focused_window:title() .. "\n")
-  if frontmost_title:match("Microsoft Teams") then
-    hs.alert.show("partial match")
-  elseif frontmost_title == "Microsoft Teams (work or school)" then
-    hs.alert.show("Full name match")
-  else
-    hs.alert.show("frontmost_app title: " .. hs.application.frontmostApplication():title() .. "\nfocused_win title: " .. focused_window:title() .. "\n at relative\n" .. hs.inspect(hs.mouse.getRelativePosition()) .. "\n and absolute:\n" .. hs.inspect(hs.mouse.absolutePosition()), 4)
-  end
+  --hs.alert.show("frontmost_app title: " .. hs.application.frontmostApplication():title() .. "\nfocused_win title: " .. focused_window:title() .. "\n at relative\n" .. hs.inspect(hs.mouse.getRelativePosition()) .. "\n and absolute:\n" .. hs.inspect(hs.mouse.absolutePosition()), 4)
+  hs.alert.show("frontmost_app title: " .. frontmost_application:title() .. "\nfrontmost_window title: " .. frontmost_window:title() .. "\nfocused_win title: " .. focused_window:title() .. "\n at relative\n" .. hs.inspect(hs.mouse.getRelativePosition()) .. "\n and absolute:\n" .. hs.inspect(hs.mouse.absolutePosition()), 6)
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts
