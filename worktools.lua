@@ -266,7 +266,7 @@ hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
 end)
 
 hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
-  reminders_window=hs.window.find("Reminders")
+  reminders_window=hs.window.find("Reminder")
   if reminders_window then
     reminders_window:close()
   else
