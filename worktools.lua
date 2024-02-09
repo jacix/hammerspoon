@@ -13,6 +13,7 @@ change log
   2024-01-31 - connectForti sends ".t{return}" to select the right VPN endpoint
   2024-02-02 - connectForti waits for Forticlient to be active in 0.1s spurts instead of blindly sleeping for 2s
   2024-02-06 - add outlook-reminder closenheimer (hyper-O); add URLs for Teams mic and camera mute-o-matic
+  2024-02-08 - outlook-reminder-closenheimer converted to function so can be called by hotkey or URL
 --]]
 
 -- variables used by multiple bindings
@@ -265,16 +266,25 @@ hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
   end
 end)
 
-hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
+-- Clear Outlook reminders. It's a function so can be called by hotkey or URL
+function clearOutlookReminders()
   reminders_window=hs.window.find("Reminder")
   if reminders_window then
     reminders_window:close()
   else
     hs.alert.show("What reminders? (hint: I can't find a reminders window.")
   end
+end
+
+hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
+  clearOutlookReminders()
 end)
 
-
+hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
+  clearOutlookReminders()
+end)
+--------------------------------
+-- Teams mutes
 hs.urlevent.bind("muteTeamsMic",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "m",hs.application.find("Microsoft Teams"))
 end)
@@ -282,6 +292,7 @@ end)
 hs.urlevent.bind("muteTeamsCam",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "o",hs.application.find("Microsoft Teams"))
 end)
+------------------------
 
 --[[
 hs.urlevent.bind("vpnMenuItem",function(eventName,params)
