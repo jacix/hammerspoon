@@ -12,6 +12,7 @@ change log:
   2024-01-18 - add spoon MicMute
   2024-01-24 - meta-F shows relative and absolute mouse positions
   2024-02-06 - add "hs.application.enableSpotlightForNameSearches(true)"; add front-most window to hyper-F
+  2024-02-13 - add URLs to play/pause Music
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -131,6 +132,20 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "S", "Is sleep disabled?", function()
   end
 end)
 
+-- URLs to play and pause music
+hs.urlevent.bind("pauseMusic",function(pauseMusic, params)
+  if hs.itunes.getPlaybackState() == "kPSP" then
+    music_was_playing=True
+  else
+    music_was_playing=False
+  end
+  --hs.osascript.applescript('tell application "Music" to pause')
+  hs.itunes.pause()
+end)
+hs.urlevent.bind("playMusic",function(playMusic, params)
+  --hs.osascript.applescript('tell application "Music" to play')
+  hs.itunes.play()
+end)
 ----------------------------------------------------------------------------------------------
 -- work-in-progress to get a list of windows for finding focus and such
 --[[

@@ -37,3 +37,6 @@ Jason's public hammerspoon scripts - last updated 2023-03-25
 ## ```worktools.lua``` - things applicable only for work
   * ```ctrl```-```opt```-```cmd```-```T``` => take a URL from the pasteboard and create a prettified hyperlink in Teams
   * ```ctrl```-```opt```-```cmd```-```J``` => print my work email address
+
+## ```music-webserver.lua``` - basic, dumb web server to manage Apple Music
+  * various URL calls to play, pause, change volume, get artist or track or album. WIP
