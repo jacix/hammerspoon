@@ -12,7 +12,8 @@ To do
 * create a Spoon?
 
 Changelog
-* 2024-02-14 - initial creation
+* 2024-02-13 - initial creation
+* 2024-02-14 - "isPlaying" checks to see if the application is running before calling it. Prevents query from starting the app.
 ]]--
 function musicFunction(reqtype, path, headers, body)
   --print(path .. "\n")
@@ -36,8 +37,12 @@ function musicFunction(reqtype, path, headers, body)
   elseif path=="/currentTrack" then
     returnMessage=hs.itunes.getCurrentTrack()
   elseif path=="/isPlaying" then
-    if hs.itunes.isPlaying() then
-      returnMessage="1"
+    if hs.application.find("Music",True,True) then
+      if hs.itunes.isPlaying() then
+        returnMessage="1"
+      else
+        returnMessage="0"
+      end
     else
       returnMessage="0"
     end
