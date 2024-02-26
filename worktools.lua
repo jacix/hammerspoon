@@ -14,6 +14,7 @@ change log
   2024-02-02 - connectForti waits for Forticlient to be active in 0.1s spurts instead of blindly sleeping for 2s
   2024-02-06 - add outlook-reminder closenheimer (hyper-O); add URLs for Teams mic and camera mute-o-matic
   2024-02-08 - outlook-reminder-closenheimer converted to function so can be called by hotkey or URL
+  2024-02-26 - add teams hangup URL
 --]]
 
 -- variables used by multiple bindings
@@ -284,13 +285,17 @@ hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
   clearOutlookReminders()
 end)
 --------------------------------
--- Teams mutes
+-- Teams URLS
 hs.urlevent.bind("muteTeamsMic",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "m",hs.application.find("Microsoft Teams"))
 end)
 
 hs.urlevent.bind("muteTeamsCam",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "o",hs.application.find("Microsoft Teams"))
+end)
+
+hs.urlevent.bind("hangupTeams",function(eventName, params)
+  hs.eventtap.keyStroke({"cmd", "shift"}, "h",hs.application.find("Microsoft Teams"))
 end)
 ------------------------
 
