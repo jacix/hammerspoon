@@ -13,6 +13,7 @@ change log:
   2024-01-24 - meta-F shows relative and absolute mouse positions
   2024-02-06 - add "hs.application.enableSpotlightForNameSearches(true)"; add front-most window to hyper-F
   2024-02-13 - add URLs to play/pause Music
+  2024-02-28 - add bundleID to hyper-F; improve mouse cooridinate output in hyper-F
 --]]
 
 ----------------------------------------------------------------------------------------------
@@ -94,8 +95,11 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most app+window; focused wind
   frontmost_application = hs.application.frontmostApplication()
   frontmost_window = hs.window.frontmostWindow()
   focused_window = hs.window.focusedWindow()
-  --hs.alert.show("frontmost_app title: " .. hs.application.frontmostApplication():title() .. "\nfocused_win title: " .. focused_window:title() .. "\n at relative\n" .. hs.inspect(hs.mouse.getRelativePosition()) .. "\n and absolute:\n" .. hs.inspect(hs.mouse.absolutePosition()), 4)
-  hs.alert.show("frontmost_app title: " .. frontmost_application:title() .. "\nfrontmost_window title: " .. frontmost_window:title() .. "\nfocused_win title: " .. focused_window:title() .. "\n at relative\n" .. hs.inspect(hs.mouse.getRelativePosition()) .. "\n and absolute:\n" .. hs.inspect(hs.mouse.absolutePosition()), 6)
+  relative_mouse = hs.mouse.getRelativePosition()
+  absolute_mouse = hs.mouse.absolutePosition()
+
+  -- hs.alert.show("- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_window title: " .. frontmost_window:title() .. "\n- focused_win title: " .. focused_window:title() .. "\n- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- Mouse relative: " .. hs.inspect(hs.inspect(hs.mouse.getRelativePosition())) .. "\n and absolute:\n" .. hs.inspect(hs.inspect(hs.mouse.absolutePosition())), 6)
+   hs.alert.show("- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_window title: " .. frontmost_window:title() .. "\n- focused_win title: " .. focused_window:title() .. "\n- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 6)
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts

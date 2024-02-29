@@ -15,6 +15,7 @@ change log
   2024-02-06 - add outlook-reminder closenheimer (hyper-O); add URLs for Teams mic and camera mute-o-matic
   2024-02-08 - outlook-reminder-closenheimer converted to function so can be called by hotkey or URL
   2024-02-26 - add teams URLs to hang up, raise/lower hand; change URL names to start with "teams"
+  2024-02-28 - add URL handler to shunt Jenkins to Firefox
 --]]
 
 -- variables used by multiple bindings
@@ -302,6 +303,20 @@ hs.urlevent.bind("teamsToggleHand",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "k",hs.application.find("Microsoft Teams"))
 end)
 ------------------------
+
+-- URL Dispatcher to send applications to Firefox if necessary
+Install:andUse("URLDispatcher", {
+  config = {
+    url_patterns = {
+      { "ci.intouchhealth.io", "org.mozilla.firefox" }
+    },
+    default_handler = "com.apple.Safari"
+  },
+  start = true,
+  -- Enable debug logging if you get unexpected behavior
+  -- loglevel = 'debug'
+}
+)
 
 --[[
 hs.urlevent.bind("vpnMenuItem",function(eventName,params)

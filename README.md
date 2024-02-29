@@ -1,5 +1,5 @@
 # hammerspoon
-Jason's public hammerspoon scripts - last updated 2023-03-25
+Jason's public hammerspoon scripts - last updated 2024-02-28
 
 ### ```init.lua``` - the initializer with general stuff for any environment
 #### hotkeys and other functions
@@ -31,6 +31,7 @@ Jason's public hammerspoon scripts - last updated 2023-03-25
 * KSheet - cheat sheet
 * ReloadConfiguration - duh
 * SpoonInstalll - simplified spoon installer and manager
+* URLDispatcher - open CB Jenkins URLs in Firefox
 
 ---
 
