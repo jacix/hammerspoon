@@ -29,6 +29,9 @@ hs.alert.show("Loading work tools")
 -- to do:
 -- * Figure out how to click in the tex box in the Teams window after creating a link.
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
+  -- reset some variables
+  tag = nil
+  url = nil
   mypasteboard = hs.pasteboard.getContents()
   focused_window = hs.window.focusedWindow()
   focused_window_title = focused_window:title()
@@ -36,11 +39,11 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
   if not mypasteboard:match("https?://") then
     hs.alert.show("Clipboard ain't right.\nclipboard: " .. mypasteboard , 4)
     return
-  elseif mypasteboard:match("https://jira.teladoc.net/") then
-    _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
   elseif mypasteboard:match("https://github.com/") then
     _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
     tag = "PR:" .. tag
+  elseif mypasteboard:match("https?://") then
+    _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
   end
   if tag == nil then
     tag="(nil tag)"
