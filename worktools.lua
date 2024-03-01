@@ -16,7 +16,7 @@ change log
   2024-02-08 - outlook-reminder-closenheimer converted to function so can be called by hotkey or URL
   2024-02-26 - add teams URLs to hang up, raise/lower hand; change URL names to start with "teams"
   2024-02-28 - add URL handler to shunt Jenkins to Firefox
-  2024-03-01 - linkenator handles github PRs, better erroring on missing or bad URLs
+  2024-03-01 - linkenator: now hyper-L; do github PRs, AWS links; better erroring on missing or bad URL; chop trailing CR; output to JIRA
 --]]
 
 -- variables used by multiple bindings
@@ -28,28 +28,38 @@ hs.alert.show("Loading work tools")
 -- take a URL from the clipboard and make an application-friendly hyperlink
 -- to do:
 -- * Figure out how to click in the tex box in the Teams window after creating a link.
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
-  -- reset some variables
-  tag = nil
-  url = nil
-  mypasteboard = hs.pasteboard.getContents()
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Old Web link-enator", function()
+  hs.alert.show("Nope. hyper-L, genius")
+end)
+
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", function()
+  -- clear variables
+  pr, repo, tag = nil
+  -- craft a tag from the pasteboard
+  mypasteboard = hs.pasteboard.getContents():gsub("\n$","")
+  if not mypasteboard:match("https?://") then
+    hs.alert.show("Clipboard ain't right.\n clipboard: " .. mypasteboard , 4)
+    return
+  elseif mypasteboard:match("https://github.com/.*/pull/") then
+    --_, _, repo, pr = string.find(mypasteboard, ".*github.com/(.*)/pull/(.*)")
+    repo, pr = mypasteboard:match(".*github.com/(.*)/pull/(.*)")
+    tag = "PR:" .. repo .. ";" .. pr
+  elseif mypasteboard:match("https://github.com") then
+    repo = mypasteboard:match(".*github.com/(.*)")
+    tag = "GH:" .. repo
+  elseif mypasteboard:match("https://.*console.aws.amazon.com") then
+    tag = mypasteboard:match(".*=.*=(.*[0-9a-z])")
+  elseif mypasteboard:match("https?://") then
+    tag = string.match(mypasteboard, ".*/(.*)")
+  end
+  if tag == nil then
+    hs.alert.show("URL found but No tag.\n clipboard: " .. mypasteboard, 4)
+    return
+  end
+  -- create a nicely-formatted link in various applications
   focused_window = hs.window.focusedWindow()
   focused_window_title = focused_window:title()
   frontmost_app_title = hs.application.frontmostApplication():title()
-  if not mypasteboard:match("https?://") then
-    hs.alert.show("Clipboard ain't right.\nclipboard: " .. mypasteboard , 4)
-    return
-  elseif mypasteboard:match("https://github.com/") then
-    _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
-    tag = "PR:" .. tag
-  elseif mypasteboard:match("https?://") then
-    _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
-  end
-  if tag == nil then
-    tag="(nil tag)"
-    hs.alert.show("Clipboard ain't right.\nclipboard: " .. mypasteboard .. "\nurl: " .. url .. "\ntag: " .. tag,4)
-    return
-  end
   if frontmost_app_title:match("Microsoft Teams") then
     hs.eventtap.keyStroke({"cmd"}, "k")
     hs.timer.usleep(50000)
@@ -61,7 +71,7 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
     hs.timer.usleep(500000)
     hs.eventtap.keyStroke({}, "return")
     focused_window:focus()
-  elseif focused_window_title:match("jason.schechner@teladoc.com") then
+  elseif (frontmost_app_title == "Microsoft Outlook") and (focused_window_title:match("jason.schechner@teladoc.com")) then
     hs.eventtap.keyStroke({"cmd"}, "k")
     hs.eventtap.keyStrokes(mypasteboard)
     hs.eventtap.keyStroke({"shift"}, "tab")
@@ -69,20 +79,14 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
     hs.eventtap.keyStroke({"shift"}, "tab")
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "return")
-  elseif focused_window_title:match("CONFLUENCE DATA CENTER") then
-    hs.eventtap.keyStroke({"cmd"}, "k")
-    hs.timer.usleep(10000)
-    hs.eventtap.keyStrokes(mypasteboard)
-    hs.eventtap.keyStroke({}, "tab")
-    hs.timer.usleep(10000)
-    hs.eventtap.keyStrokes(tag)
-    hs.timer.usleep(10000)
-    hs.eventtap.keyStroke({}, "return")
+  elseif ( focused_window_title:match("CONFLUENCE DATA CENTER") or focused_window_title:match("JIRA DATA CENTER")) then
+    hs.eventtap.keyStrokes("[" .. tag .. "|" .. mypasteboard .. "]")
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
   end
 end)
 
+--[[ 2024-03-01: moved to hyper-T and disabled; delete me soon
 ----------------------------------------------------------------------------------------------
 -- take an AWS URL from the clipboard and make a confluence-friendly hyperlink
 -- to do:
@@ -96,6 +100,7 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "A", "AWS-confluence link-enator", functi
   hs.eventtap.keyStrokes("["..tag.."|"..mypasteboard.."]")
   focused_window:focus()
 end)
+--]]
 
 -- Check if on VPN when HS starts, and if so, disable sleep
 -- courtesy of https://medium.com/@robhowlett/hammerspoon-the-best-mac-software-youve-never-heard-of-40c2df6db0f8
@@ -187,7 +192,7 @@ hs.urlevent.bind("connectFortinet",function(eventName, params)
   do
      while_counter=while_counter+1
      focusedWindow = hs.window.focusedWindow()
---[[
+--[[ checking to see how long I have to wait for forticlient to come into focus; only for debugging
      if focusedWindow then
           print(while_counter .. " : hs.window.focusedWindow():title() = " .. hs.window.focusedWindow():title())
      else
@@ -320,19 +325,8 @@ Install:andUse("URLDispatcher", {
 )
 
 --[[
-hs.urlevent.bind("vpnMenuItem",function(eventName,params)
-  -- usage: vpnMenuItem?connected=1&service=forti
-  hs.alert("I see params" .. hs.inspect(params))
-    vpnMenuStatus:returnToMenuBar()
-  else
-    vpnMenuStatus:removeFromMenuBar()
-    vpnMenuStatus:setTitle(params["service"])
-  end
-end)
-
---[[
 ----------------------------------------------------------------------------------------------
--- raise Azure VPN window, hang up VPN and close it - 2024-01-24
+-- 2024-01-24 : raise Azure VPN window, hang up VPN and close it - being done by workvpn.sh so commented out
 hs.urlevent.bind("dropAzureVPN",function(eventName, params)
   --azure_vpn_app=hs.application.find("Azure VPN")
   --azure_vpn_app=hs.application.find("com.microsoft.AzureVpnMac")
