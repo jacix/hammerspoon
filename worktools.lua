@@ -16,6 +16,7 @@ change log
   2024-02-08 - outlook-reminder-closenheimer converted to function so can be called by hotkey or URL
   2024-02-26 - add teams URLs to hang up, raise/lower hand; change URL names to start with "teams"
   2024-02-28 - add URL handler to shunt Jenkins to Firefox
+  2024-03-01 - linkenator handles github PRs, better erroring on missing or bad URLs
 --]]
 
 -- variables used by multiple bindings
@@ -32,20 +33,17 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Web link-enator", function()
   focused_window = hs.window.focusedWindow()
   focused_window_title = focused_window:title()
   frontmost_app_title = hs.application.frontmostApplication():title()
-  _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
-  badurl=nil
-  if url == nil then
-    url="(nil url)"
-    badurl=1
+  if not mypasteboard:match("https?://") then
+    hs.alert.show("Clipboard ain't right.\nclipboard: " .. mypasteboard , 4)
+    return
+  elseif mypasteboard:match("https://jira.teladoc.net/") then
+    _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
+  elseif mypasteboard:match("https://github.com/") then
+    _, _, url, tag = string.find(mypasteboard, "(.*)/(.*)")
+    tag = "PR:" .. tag
   end
   if tag == nil then
     tag="(nil tag)"
-    badurl=1
-  end
-  if not mypasteboard:match("https?://") then
-    badurl=1
-  end
-    if badurl==1 then
     hs.alert.show("Clipboard ain't right.\nclipboard: " .. mypasteboard .. "\nurl: " .. url .. "\ntag: " .. tag,4)
     return
   end
