@@ -18,6 +18,7 @@ change log
   2024-02-28 - add URL handler to shunt Jenkins to Firefox
   2024-03-01 - linkenator: now hyper-L; do github PRs, AWS links; better erroring on missing or bad URL; chop trailing CR; output to JIRA
   2024-03-06 - save hotkey object when binding, move mic-mute here from init.lua, chop trailing / in linkenator
+  2024-03-07 - outlook reminder clear-o-matic also clears permissions notice window
 --]]
 
 -- variables used by multiple bindings
@@ -87,22 +88,6 @@ hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", f
   end
 end)
 
---[[ 2024-03-01: moved to hyper-T and disabled; delete me soon
-----------------------------------------------------------------------------------------------
--- take an AWS URL from the clipboard and make a confluence-friendly hyperlink
--- to do:
--- * detect whether there's an AWS URL in the pasteboard
--- * detect app in focus and change output accordingly
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "A", "AWS-confluence link-enator", function()
-  mypasteboard = hs.pasteboard.getContents()
-  focused_window = hs.window.focusedWindow()
-  tag = string.match(mypasteboard, ".*=.*=(.*[0-9a-z])")
-  hs.timer.usleep(75000)
-  hs.eventtap.keyStrokes("["..tag.."|"..mypasteboard.."]")
-  focused_window:focus()
-end)
---]]
-
 -- Check if on VPN when HS starts, and if so, disable sleep
 -- courtesy of https://medium.com/@robhowlett/hammerspoon-the-best-mac-software-youve-never-heard-of-40c2df6db0f8
 function pingResult(object, message, seqnum, error)
@@ -132,9 +117,6 @@ end)
 ----------------------------------------------------------------------------------------------
 -- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
 hs.urlevent.bind("dropFortinetold",function(eventName, params)
---     fortiIcon = { x=1483; y=-1425 }
---     fortiClick = { x=1485; y=-1380 }
---     fortiConsole = { x=1485; y=-1200 }
   fortiIcon = { x=1495; y=11 }
   fortiClick = { x=1497; y=56 }
   fortiConsole = { x=1497; y=236 }
@@ -261,7 +243,9 @@ hs.urlevent.bind("dropAzure",function(eventName, params)
   end
   hs.mouse.absolutePosition(mousePosition)
 end)
+----------------------------------------------------------------------------------------------
 
+-- Add VPN status to the menu bar
 vpnMenuStatus=hs.menubar.new()
 vpnMenuStatus:setIcon("images/pad-lock-png-free-download-23_20x20.png")
 
@@ -274,8 +258,10 @@ hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
     vpnMenuStatus:removeFromMenuBar()
   end
 end)
+----------------------------------------------------------------------------------------------
 
 -- Clear Outlook reminders. It's a function so can be called by hotkey or URL
+-- also clear the annoying permissions changed notice box. Need to find a way to see if it's present.
 function clearOutlookReminders()
   reminders_window=hs.window.find("Reminder")
   if reminders_window then
@@ -283,6 +269,8 @@ function clearOutlookReminders()
   else
     hs.alert.show("What reminders? (hint: I can't find a reminders window.")
   end
+  privs_close_x = { x = 1374.40234375, y = 45.69921875 }
+  hs.eventtap.Leftclick(privs_close_x)
 end
 
 hotkey_hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
@@ -292,8 +280,9 @@ end)
 hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
   clearOutlookReminders()
 end)
---------------------------------
--- Teams URLS
+----------------------------------------------------------------------------------------------
+
+-- Teams URLs - names should be self-explanatory
 hs.urlevent.bind("teamsMuteMic",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "m",hs.application.find("Microsoft Teams"))
 end)
@@ -309,9 +298,9 @@ end)
 hs.urlevent.bind("teamsToggleHand",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "k",hs.application.find("Microsoft Teams"))
 end)
-------------------------
+----------------------------------------------------------------------------------------------
 
--- URL Dispatcher to send applications to Firefox if necessary
+-- URL Dispatcher to send applications to Firefox when necessary
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
@@ -323,6 +312,7 @@ Install:andUse("URLDispatcher", {
   -- Enable debug logging if you get unexpected behavior
   -- loglevel = 'debug'
 })
+----------------------------------------------------------------------------------------------
 
 -- clipboard manager
 Install:andUse("ClipboardTool", {
@@ -332,17 +322,18 @@ Install:andUse("ClipboardTool", {
 })
 spoon.ClipboardTool:start()
 
--- works but no help in hyper-h
+-- this works but no help in hyper-h
 Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 
--- works, and has help with hyper-h but displays two copies of the menu bar icon
+-- this works, and has help with hyper-h but displays two copies of the menu bar icon
 -- hs.loadSpoon("MicMute")
 -- hs.spoons.use("MicMute")
 -- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
 --   spoon.MicMute:toggleMicMute()
 -- end)
+----------------------------------------------------------------------------------------------
 
---[[
+--[[ WIP
 ----------------------------------------------------------------------------------------------
 -- 2024-01-24 : raise Azure VPN window, hang up VPN and close it - being done by workvpn.sh so commented out
 hs.urlevent.bind("dropAzureVPN",function(eventName, params)
