@@ -15,6 +15,7 @@ Changelog
   2024-02-13 - initial creation
   2024-02-14 - 'isPlaying' only queries Music if the app is running. Prevents the query from starting the app.
   2024-03-06 - 'pause' sets var 'music_was_playing'; added 'restart' command to play only if that var is true. Use with hass.
+  2024-03-07 - nil 'music_was_playing' on play and if isPlaying() is true; fix missing '/' in restart; fix formatting
 ]]--
 function musicFunction(reqtype, path, headers, body)
   -- reqtype (GET, POST, PUT) not used... yet.
@@ -22,6 +23,7 @@ function musicFunction(reqtype, path, headers, body)
   returnCode=200
   if path=="/play" then
     hs.itunes.play()
+    music_was_playing = nil
     returnMessage="played"
   elseif path=="/pause" then
     if hs.itunes.getPlaybackState() == "kPSP" then
@@ -31,12 +33,12 @@ function musicFunction(reqtype, path, headers, body)
     end
     hs.itunes.pause()
     returnMessage="paused"
-  elseif path == "restart" then -- only start music if variable "music_was_playing" is true
-	  if music_was_playing then
+  elseif path == "/restart" then -- only start music if variable "music_was_playing" is true
+    if music_was_playing then
       hs.itunes.play()
- 			music_was_playing = nil
+      music_was_playing = nil
       returnMessage="restarted"
-		end
+    end
   elseif path=="/next" then
     hs.itunes.next()
     returnMessage="skipping"
@@ -52,6 +54,9 @@ function musicFunction(reqtype, path, headers, body)
   elseif path=="/isPlaying" then
     if hs.application.find("Music",True,True) then
       if hs.itunes.isPlaying() then
+        -- if music_was_playing is set and music is started manually, music_was_playing will remain set. Shouldn't happen,
+        -- but in case it does, nil music_was_playing when playback is detected.
+        music_was_playing=nil
         returnMessage="1"
       else
         returnMessage="0"
