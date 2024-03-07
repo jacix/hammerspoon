@@ -2,6 +2,7 @@
 Jason's public hammerspoon scripts - last updated 2024-02-28
 
 ### ```init.lua``` - the initializer with general stuff for any environment
+### ```toggle-notification.lua``` - simple script to toggle app notifications
 #### hotkeys and other functions
 * demos from the HS intro, many of which are now in the basement
 * ```cmd```-```opt```-```D``` => launch applescript to ask for desired date pattern: dd, ddd, hh, hhh, ddhh, dddhhh

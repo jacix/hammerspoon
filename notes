@@ -16,6 +16,11 @@ show a table: hs.inspect(table)
 iterate through a table: for index, value in next, oldmouse do print(index.. ": " .. value ) end
 find current mouse position: for index, value in next, hs.mouse.absolutePosition() do print(index.. ": " .. value ) end
 
+2024-03-06
+hs.hotkey.getLogLevel and hs.hotkey.setLogLevel
+bindHotKey helper - can bind a hotkey to a single app, or exclude from apps
+  https://github.com/muescha/dot_hammerspoon?tab=readme-ov-file
+
 ====================================================================
 log
 ========
