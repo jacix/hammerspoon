@@ -29,11 +29,11 @@ hs.alert.show("Loading work tools")
 -- take a URL from the clipboard and make an application-friendly hyperlink
 -- to do:
 -- * Figure out how to click in the text box in the Teams window after creating a link.
-hotkey-hyperT = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Old Web link-enator", function()
+hotkey_hyperT = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Old Web link-enator", function()
   hs.alert.show("Nope. hyper-L, genius")
 end)
 
-hotkey-hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", function()
+hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", function()
   -- clear variables
   pr, repo, tag = nil
   -- craft a tag from the pasteboard
@@ -126,7 +126,7 @@ end
 hs.network.ping.ping("jump1.aws2.teladoc.com", 3, 0.2, 1.0, "any", pingResult)
 
 -- print my email address
-hotkey-hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
+hotkey_hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
   hs.eventtap.keyStrokes(my_work_email)
 end)
 ----------------------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ function clearOutlookReminders()
   end
 end
 
-hotkey-hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
+hotkey_hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
   clearOutlookReminders()
 end)
 
