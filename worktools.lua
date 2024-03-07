@@ -17,6 +17,7 @@ change log
   2024-02-26 - add teams URLs to hang up, raise/lower hand; change URL names to start with "teams"
   2024-02-28 - add URL handler to shunt Jenkins to Firefox
   2024-03-01 - linkenator: now hyper-L; do github PRs, AWS links; better erroring on missing or bad URL; chop trailing CR; output to JIRA
+  2024-03-06 - save hotkey object when binding, move mic-mute here from init.lua, chop trailing / in linkenator
 --]]
 
 -- variables used by multiple bindings
@@ -27,16 +28,16 @@ hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
 -- take a URL from the clipboard and make an application-friendly hyperlink
 -- to do:
--- * Figure out how to click in the tex box in the Teams window after creating a link.
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Old Web link-enator", function()
+-- * Figure out how to click in the text box in the Teams window after creating a link.
+hotkey-hyperT = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Old Web link-enator", function()
   hs.alert.show("Nope. hyper-L, genius")
 end)
 
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", function()
+hotkey-hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", function()
   -- clear variables
   pr, repo, tag = nil
   -- craft a tag from the pasteboard
-  mypasteboard = hs.pasteboard.getContents():gsub("\n$","")
+  mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")
   if not mypasteboard:match("https?://") then
     hs.alert.show("Clipboard ain't right.\n clipboard: " .. mypasteboard , 4)
     return
@@ -125,8 +126,8 @@ end
 hs.network.ping.ping("jump1.aws2.teladoc.com", 3, 0.2, 1.0, "any", pingResult)
 
 -- print my email address
-hs.hotkey.bind(hyper, "J", "my email", function()
-  hs.eventtap.keyStrokes(my_email)
+hotkey-hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
+  hs.eventtap.keyStrokes(my_work_email)
 end)
 ----------------------------------------------------------------------------------------------
 -- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
@@ -284,7 +285,7 @@ function clearOutlookReminders()
   end
 end
 
-hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
+hotkey-hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
   clearOutlookReminders()
 end)
 
@@ -321,8 +322,25 @@ Install:andUse("URLDispatcher", {
   start = true,
   -- Enable debug logging if you get unexpected behavior
   -- loglevel = 'debug'
-}
-)
+})
+
+-- clipboard manager
+Install:andUse("ClipboardTool", {
+  config = { menubar_title = "\u{1f4ce}",
+             hist_size = 250},
+  hotkeys = { show_clipboard = { hyper, "V" }}
+})
+spoon.ClipboardTool:start()
+
+-- works but no help in hyper-h
+Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
+
+-- works, and has help with hyper-h but displays two copies of the menu bar icon
+-- hs.loadSpoon("MicMute")
+-- hs.spoons.use("MicMute")
+-- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
+--   spoon.MicMute:toggleMicMute()
+-- end)
 
 --[[
 ----------------------------------------------------------------------------------------------

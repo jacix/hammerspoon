@@ -14,14 +14,17 @@ change log:
   2024-02-06 - add "hs.application.enableSpotlightForNameSearches(true)"; add front-most window to hyper-F
   2024-02-13 - add URLs to play/pause Music
   2024-02-28 - add bundleID to hyper-F; improve mouse cooridinate output in hyper-F
+  2024-03-06 - hyper-F adds vars for relative and absolute mouse positions - useful in console; save hotkey object when binding
+               much cleanup; merged Vader's bespoke init.lua by:
+                 mic-mute, clipboard manager to worktools; music URLs to hometools; vader loads music-webserver
 --]]
-
 ----------------------------------------------------------------------------------------------
 -- some variables
-hyper       = {"cmd","alt","ctrl"}
-shift_hyper = {"cmd","alt","ctrl","shift"}
-ctrl_cmd    = {"cmd","ctrl"}
-my_email    = "jason.schechner@teladochealth.com"
+hyper          = {"cmd","alt","ctrl"}
+shift_hyper    = {"cmd","alt","ctrl","shift"}
+ctrl_cmd       = {"cmd","ctrl"}
+my_email       = "hammerspoonie@jasons.us"
+my_work_email  = "jason.schechner@teladochealth.com"
 -- work_logo = hs.image.imageFromPath(hs.configdir .. "/files/work_logo_2x.png")
 
 ----------------------------------------------------------------------------------------------
@@ -37,12 +40,17 @@ hs.loadSpoon("FadeLogo"):start()
 -- hs.loadSpoon("ReloadConfiguration"):start()
 Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hyper, "R" }, "Reload" }})
 
-Install:andUse("ClipboardTool", {
-  config = { menubar_title = "\u{1f4ce}",
-             hist_size = 250},
-  hotkeys = { show_clipboard = { hyper, "V" }}
-  })
-spoon.ClipboardTool:start()
+----------------------------------------------------------------------------------------------
+-- determine my hostname, so I know what to load
+myhostname = hs.host.localizedName()
+if myhostname == "REM-JasonSchechner" or myhostname == "Jason Schechner Y3WLD0C6NF" then
+  local workstuff = require('worktools')
+elseif myhostname == "vader" then
+  local homestuff = require('hometools')
+  local homestuff = require('music-webserver')
+else
+  hs.alert("I don't recognize " .. myhostname .. " so not loading work or home tools.",4)
+end
 
 Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
 
@@ -52,17 +60,7 @@ Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
 spoon.SpoonInstall:installSpoonFromRepo("Keychain")
 hs.spoons.use("Keychain")
 
--- works but no help in hyper-h
-Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
-
--- works, and has help with hyper-h but displays two copies of the menu bar icon
--- hs.loadSpoon("MicMute")
--- hs.spoons.use("MicMute")
--- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
---   spoon.MicMute:toggleMicMute()
--- end)
-
------ recursive binder - this is going to take more time to grok
+----- recursive binder - this is going to take more time to grok, so start with a datenheimer
 -- https://nethuml.github.io/posts/2022/04/hammerspoon-global-leader-key/
 Install:installSpoonFromRepo("RecursiveBinder")
 local recursives = require("recursives")
@@ -70,10 +68,10 @@ local recursives = require("recursives")
 spoon.RecursiveBinder.helperFormat = {
     atScreenEdge = 2,  -- Bottom edge (default value)
     textStyle = {  -- An hs.styledtext object
-	font = {
+	  font = {
 	    name = "Fira Code",
 	    size = 18
-	}
+	  }
     }
 }
 --]]
@@ -87,19 +85,17 @@ end)
 -- enable Spotlight support
 hs.application.enableSpotlightForNameSearches(true)
 -- show registered hotkeys
-hs.hotkey.showHotkeys({"cmd", "alt", "ctrl"}, "H")
+hotkey_HyperH = hs.hotkey.showHotkeys({"cmd", "alt", "ctrl"}, "H")
 
 -- show the name of the front-most application. Good for troubleshooting.
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most app+window; focused window", function()
+hotkey_HyperF = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most app+window; focused window", function()
   -- These calls can be made in alert.show, but for troubleshooting you can ref them in the console
   frontmost_application = hs.application.frontmostApplication()
   frontmost_window = hs.window.frontmostWindow()
   focused_window = hs.window.focusedWindow()
   relative_mouse = hs.mouse.getRelativePosition()
   absolute_mouse = hs.mouse.absolutePosition()
-
-  -- hs.alert.show("- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_window title: " .. frontmost_window:title() .. "\n- focused_win title: " .. focused_window:title() .. "\n- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- Mouse relative: " .. hs.inspect(hs.inspect(hs.mouse.getRelativePosition())) .. "\n and absolute:\n" .. hs.inspect(hs.inspect(hs.mouse.absolutePosition())), 6)
-   hs.alert.show("- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_window title: " .. frontmost_window:title() .. "\n- focused_win title: " .. focused_window:title() .. "\n- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 6)
+  hs.alert.show("- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_window title: " .. frontmost_window:title() .. "\n- focused_win title: " .. focused_window:title() .. "\n- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 6)
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts
@@ -128,7 +124,7 @@ hs.urlevent.bind("chill",function(eventName, params)
     setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end)
 -- HK to check whether sleep is enabled or not
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "S", "Is sleep disabled?", function()
+hotkey_HyperS = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "S", "Is sleep disabled?", function()
   if hs.caffeinate.get("displayIdle") then
     hs.alert.show("DisplayIdle disabled. (No sleep till Brooklyn.)")
   else
@@ -136,22 +132,7 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "S", "Is sleep disabled?", function()
   end
 end)
 
--- URLs to play and pause music
-hs.urlevent.bind("pauseMusic",function(pauseMusic, params)
-  if hs.itunes.getPlaybackState() == "kPSP" then
-    music_was_playing=True
-  else
-    music_was_playing=False
-  end
-  --hs.osascript.applescript('tell application "Music" to pause')
-  hs.itunes.pause()
-end)
-hs.urlevent.bind("playMusic",function(playMusic, params)
-  --hs.osascript.applescript('tell application "Music" to play')
-  hs.itunes.play()
-end)
-----------------------------------------------------------------------------------------------
--- work-in-progress to get a list of windows for finding focus and such
+-- work-in-progress to get a list of windows for finding focus and such; useful? dunno
 --[[
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
   --window_list = hs.window.list(allWindows)
@@ -160,7 +141,48 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
 end)
 --]]
 
---[[
+----------------------------------------------------------------------------------------------
+-- defeat paste blocking - https://www.hammerspoon.org/go/#pasteblock - 2024-01-17
+hotkey_CmdAltV = hs.hotkey.bind({"cmd", "alt"}, "V", "defeat paste block", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
+
+------------------------------------------------------------------------------------------------------------------------
+--[[ basement: storage and references (and maybe hidden treasures)
+---------- hello world --------------------
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Y", function()
+  _, reply = hs.dialog.textPrompt("Main message.", "Please enter something:")
+  hs.alert.show("you said "..reply)
+end)
+
+---- post message to notification center ----------------------------------------------------
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
+  hs.notify.new({title="Hammerspoon", informativeText="Hello World"}):send()
+end)
+----------------------------------------------------------------------------------------------
+-- supplanted by ctrl_cmd-R in ReloadConfiguration spoon
+-- reload the config - simple reload
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "R", function()
+  hs.reload()
+end)
+-- hs.alert.show("Config loaded")
+----------------------------------------------------------------------------------------------
+-- test pop-up
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Y", function()
+_, reply = hs.dialog.textPrompt("Main message.", "Please enter something:")
+  hs.alert.show("you said ".. reply)
+end)
+----------------------------------------------------------------------------------------------
+-- hs.dialog.textPrompt("Main message.", "Please enter something:", "Default Value", "OK")
+-- hs.dialog.textPrompt("Main message.", "Please enter something:", "Default Value", "OK", "Cancel")
+-- hs.dialog.textPrompt("Main message.", "Please enter something:", "", "OK", "Cancel", true)
+----------------------------------------------------------------------------------------------
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "H", "move focused window a bit", function()
+  local win = hs.window.focusedWindow()
+  local f = win:frame()
+  f.x = f.x - 10
+  win:setFrame(f)
+end)
+----------------------------------------------------------------------------------------------
+--[[ disabled in lieu of RecursiveBinder
 ht=hs.loadSpoon("HammerText")
 ht.keywords={
   [ "ddd." ] = function() return os.date("%Y-%m-%d") end,
@@ -173,11 +195,12 @@ ht.keywords={
   [ "awsca."] = "aws.teladoc.com",
   [ "awsdk."] = "aws.teladoc.dk",
 }
+ht:start()
 --]]
 
 ----------------------------------------------------------------------------------------------
--- date-o-matic with hotkey cmd-alt-d
-hs.hotkey.bind({"cmd","alt"}, "D", "Datenheimer", function()
+--[[ disabled 2024-03-06 - RecursiveBinder is better (I forgot this was even here.)
+hotkey_CmdAltD = hs.hotkey.bind({"cmd","alt"}, "D", "Datenheimer", function()
   focused_window = hs.window.focusedWindow()
   diditrun, output, codestring = hs.osascript.applescriptFromFile("./dateomatic.applescript")
   focused_window:focus()
@@ -187,63 +210,4 @@ hs.hotkey.bind({"cmd","alt"}, "D", "Datenheimer", function()
     hs.alert.show("Say what?")
   end
 end)
-
-----------------------------------------------------------------------------------------------
--- determine my hostname, so I know what to load
-myhostname = hs.host.localizedName()
-if myhostname == "REM-JasonSchechner" or myhostname == "Jason Schechner Y3WLD0C6NF" then
-     local workstuff = require('worktools')
-end
-
--- defeat paste blocking - https://www.hammerspoon.org/go/#pasteblock - 2024-01-17
-hs.hotkey.bind({"cmd", "alt"}, "V", "defeat paste block", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
-
---[[
-ht:start()
---]]
-
---[[ basement: Stuff to keep as a reference
----------- hello world --------------------
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Y", function()
-  _, reply = hs.dialog.textPrompt("Main message.", "Please enter something:")
-  hs.alert.show("you said "..reply)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
-  hs.notify.new({title="Hammerspoon", informativeText="Hello World"}):send()
-end)
-----------------------------------------------------------------------------------------------
-
-supplanted by ctrl_cmd-R in ReloadConfiguration spoon
--- reload the config - simple reload
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "R", function()
-  hs.reload()
-end)
--- hs.alert.show("Config loaded")
-----------------------------------------------------------------------------------------------
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Q", function()
-  hs.alert.show("Hello World!")
-end)
-----------------------------------------------------------------------------------------------
-
--- test pop-up
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "Y", function()
-_, reply = hs.dialog.textPrompt("Main message.", "Please enter something:")
-  hs.alert.show("you said "..reply)
-end)
-----------------------------------------------------------------------------------------------
-
--- hs.dialog.textPrompt("Main message.", "Please enter something:", "Default Value", "OK")
--- hs.dialog.textPrompt("Main message.", "Please enter something:", "Default Value", "OK", "Cancel")
--- hs.dialog.textPrompt("Main message.", "Please enter something:", "", "OK", "Cancel", true)
-----------------------------------------------------------------------------------------------
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "H", function()
-  local win = hs.window.focusedWindow()
-  local f = win:frame()
-  f.x = f.x - 10
-  win:setFrame(f)
-end)
-
 --]]

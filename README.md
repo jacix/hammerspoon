@@ -3,13 +3,16 @@ Jason's public hammerspoon scripts - last updated 2024-02-28
 
 ### ```init.lua``` - the initializer with general stuff for any environment
 ### ```toggle-notification.lua``` - simple script to toggle app notifications
+### ```recursives.lua``` - create recursive hotkey for printing the date, date+time in long or short formats
+
 #### hotkeys and other functions
 * demos from the HS intro, many of which are now in the basement
 * ```cmd```-```opt```-```D``` => launch applescript to ask for desired date pattern: dd, ddd, hh, hhh, ddhh, dddhhh
 * ```ctrl```-```opt```-```cmd```-```C``` => show a clock (via spoon.AClock)
-* ```ctrl```-```opt```-```cmd```-```F``` => show foreground application
+* ```ctrl```-```opt```-```cmd```-```F``` => show foreground application, mouse location, focused application, etc
 * ```ctrl```-```opt```-```cmd```-```H``` => show active hotkeys
 * ```ctrl```-```opt```-```cmd```-```R``` => reload config (via spoon.ReloadConfiguration)
+* ```ctrl```-```opt```-```cmd```-```S``` => show whether sleep is enabled
 * ```ctrl```-```opt```-```cmd```-```V``` => Show clipboard manager (via ClipboardTool)
 * ```ctrl```-```opt```-```cmd```-```/``` => show app-specific cheat sheet (via spoon.KSheet)
 * create menubar item to enable/disable sleep
@@ -30,15 +33,20 @@ Jason's public hammerspoon scripts - last updated 2024-02-28
   * ```awsca.``` -> aws.teladoc.ca
   * ```awsdk.``` -> aws.teladoc.dk
 * KSheet - cheat sheet
+* Keychain - interact with Apple Keychain
+* MicMute - mute the mic
+* RecursiveBinder - bind recursive hotkeys (e.g.: hyper-D then dd to print the date, hyper-D hh for hour:min, etc)
 * ReloadConfiguration - duh
 * SpoonInstalll - simplified spoon installer and manager
-* URLDispatcher - open CB Jenkins URLs in Firefox
+* URLDispatcher - pick which browser opens specific URLs
 
 ---
 
 ## ```worktools.lua``` - things applicable only for work
-  * ```ctrl```-```opt```-```cmd```-```T``` => take a URL from the pasteboard and create a prettified hyperlink in Teams
   * ```ctrl```-```opt```-```cmd```-```J``` => print my work email address
+  * ```ctrl```-```opt```-```cmd```-```L``` => take a URL from the pasteboard and create a prettified hyperlink in Teams, Confluence, Jira, Outlook
+  * ```ctrl```-```opt```-```cmd```-```M``` => mute the mic at the OS level
+  * Use URLDispatcher to open CB Jenkins URLs in Firefox
 
 ## ```music-webserver.lua``` - basic, dumb web server to manage Apple Music
   * various URL calls to play, pause, change volume, get artist or track or album. WIP
