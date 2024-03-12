@@ -19,6 +19,7 @@ change log
   2024-03-01 - linkenator: now hyper-L; do github PRs, AWS links; better erroring on missing or bad URL; chop trailing CR; output to JIRA
   2024-03-06 - save hotkey object when binding, move mic-mute here from init.lua, chop trailing / in linkenator
   2024-03-07 - outlook reminder clear-o-matic also clears permissions notice window
+  2024-03-12 - fix typo: Leftclick -> leftClick
 --]]
 
 -- variables used by multiple bindings
@@ -270,7 +271,7 @@ function clearOutlookReminders()
     hs.alert.show("What reminders? (hint: I can't find a reminders window.")
   end
   privs_close_x = { x = 1374.40234375, y = 45.69921875 }
-  hs.eventtap.Leftclick(privs_close_x)
+  hs.eventtap.leftClick(privs_close_x)
 end
 
 hotkey_hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
