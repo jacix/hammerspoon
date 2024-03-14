@@ -20,6 +20,7 @@ change log
   2024-03-06 - save hotkey object when binding, move mic-mute here from init.lua, chop trailing / in linkenator
   2024-03-07 - outlook reminder clear-o-matic also clears permissions notice window
   2024-03-12 - fix typo: Leftclick -> leftClick
+  2024-03-13 - clipboardtool: store 100 entries, not 250. Add max_entry_size to a comment FFR; hyperL: handle DEVSD portal
 --]]
 
 -- variables used by multiple bindings
@@ -62,28 +63,36 @@ hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", f
   -- create a nicely-formatted link in various applications
   focused_window = hs.window.focusedWindow()
   focused_window_title = focused_window:title()
-  frontmost_app_title = hs.application.frontmostApplication():title()
+  frontmost_app = hs.application.frontmostApplication()
+  frontmost_app_title = frontmost_app:title()
   if frontmost_app_title:match("Microsoft Teams") then
-    hs.eventtap.keyStroke({"cmd"}, "k")
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
     hs.timer.usleep(50000)
     hs.eventtap.keyStrokes(tag)
-    hs.eventtap.keyStroke({"shift"}, "tab")
-    hs.eventtap.keyStroke({"shift"}, "tab")
-    hs.timer.usleep(50000)
-    hs.eventtap.keyStrokes(mypasteboard)
-    hs.timer.usleep(500000)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    -- hs.timer.usleep(50000)
+    hs.eventtap.keyStrokes(mypasteboard, focused_app)
+    -- hs.timer.usleep(500000)
     hs.eventtap.keyStroke({}, "return")
     focused_window:focus()
   elseif (frontmost_app_title == "Microsoft Outlook") and (focused_window_title:match("jason.schechner@teladoc.com")) then
-    hs.eventtap.keyStroke({"cmd"}, "k")
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
     hs.eventtap.keyStrokes(mypasteboard)
-    hs.eventtap.keyStroke({"shift"}, "tab")
-    hs.eventtap.keyStroke({"shift"}, "tab")
-    hs.eventtap.keyStroke({"shift"}, "tab")
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
     hs.eventtap.keyStrokes(tag)
-    hs.eventtap.keyStroke({}, "return")
-  elseif ( focused_window_title:match("CONFLUENCE DATA CENTER") or focused_window_title:match("JIRA DATA CENTER")) then
+    hs.eventtap.keyStroke({}, "return", focused_app)
+  elseif ( focused_window_title:match("CONFLUENCE DATA CENTER") or focused_window_title:match("JIRA DATA CENTER")) then 
     hs.eventtap.keyStrokes("[" .. tag .. "|" .. mypasteboard .. "]")
+  elseif ( focused_window_title:match("DevOps Service Desk") ) then
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+    hs.eventtap.keyStrokes(mypasteboard, focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "return", focused_app)
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
   end
@@ -317,8 +326,8 @@ Install:andUse("URLDispatcher", {
 
 -- clipboard manager
 Install:andUse("ClipboardTool", {
-  config = { menubar_title = "\u{1f4ce}",
-             hist_size = 250},
+  -- config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
+  config = { menubar_title = "\u{1f4ce}", hist_size = 100 },
   hotkeys = { show_clipboard = { hyper, "V" }}
 })
 spoon.ClipboardTool:start()
