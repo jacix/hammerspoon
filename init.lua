@@ -17,6 +17,7 @@ change log:
   2024-03-06 - hyper-F adds vars for relative and absolute mouse positions - useful in console; save hotkey object when binding
                much cleanup; merged Vader's bespoke init.lua by:
                  mic-mute, clipboard manager to worktools; music URLs to hometools; vader loads music-webserver
+  2024-03-18 - add mouseHighlight as hyper-shift-M; minor basement cleanup
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -145,6 +146,36 @@ end)
 -- defeat paste blocking - https://www.hammerspoon.org/go/#pasteblock - 2024-01-17
 hotkey_CmdAltV = hs.hotkey.bind({"cmd", "alt"}, "V", "defeat paste block", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
 
+----------------------------------------------------------------------------------------------
+-- mouse finder - https://www.hammerspoon.org/go/#pasteblock - 2024-03-18
+mouseCircle = nil
+mouseCircleTimer = nil
+
+function mouseHighlight()
+    -- Delete an existing highlight if it exists
+    if mouseCircle then
+        mouseCircle:delete()
+        if mouseCircleTimer then
+            mouseCircleTimer:stop()
+        end
+    end
+    -- Get the current co-ordinates of the mouse pointer
+    mousepoint = hs.mouse.absolutePosition()
+    -- Prepare a big red circle around the mouse pointer
+    mouseCircle = hs.drawing.circle(hs.geometry.rect(mousepoint.x-40, mousepoint.y-40, 80, 80))
+    mouseCircle:setStrokeColor({["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1})
+    mouseCircle:setFill(false)
+    mouseCircle:setStrokeWidth(5)
+    mouseCircle:show()
+
+    -- Set a timer to delete the circle after 3 seconds
+    mouseCircleTimer = hs.timer.doAfter(3, function()
+      mouseCircle:delete()
+      mouseCircle = nil
+    end)
+end
+hotkey_ShiftHyperM = hs.hotkey.bind(shift_hyper, "M", "MouseFinder", mouseHighlight)
+
 ------------------------------------------------------------------------------------------------------------------------
 --[[ basement: storage and references (and maybe hidden treasures)
 ---------- hello world --------------------
@@ -191,9 +222,6 @@ ht.keywords={
   [ "hh." ] = function() return os.date("%H%M") end,
   [ "dh." ] = function() return os.date("%Y%m%d.%H%M") end,
   [ "ddhh." ] = function() return os.date("%Y-%m-%d.%H%M") end,
-  [ "awsus."]  = "aws2.teladoc.com",
-  [ "awsca."] = "aws.teladoc.com",
-  [ "awsdk."] = "aws.teladoc.dk",
 }
 ht:start()
 --]]
