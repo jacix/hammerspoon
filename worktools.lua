@@ -21,6 +21,7 @@ change log
   2024-03-07 - outlook reminder clear-o-matic also clears permissions notice window
   2024-03-12 - fix typo: Leftclick -> leftClick
   2024-03-13 - clipboardtool: store 100 entries, not 250. Add max_entry_size to a comment FFR; hyperL: handle DEVSD portal
+  2024-03-26 - connectFortinet/dropFortinet: replace mouse clicks with keystrokes send directly to the application
 --]]
 
 -- variables used by multiple bindings
@@ -124,60 +125,10 @@ hs.network.ping.ping("jump1.aws2.teladoc.com", 3, 0.2, 1.0, "any", pingResult)
 hotkey_hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
   hs.eventtap.keyStrokes(my_work_email)
 end)
+
 ----------------------------------------------------------------------------------------------
--- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
-hs.urlevent.bind("dropFortinetold",function(eventName, params)
-  fortiIcon = { x=1495; y=11 }
-  fortiClick = { x=1497; y=56 }
-  fortiConsole = { x=1497; y=236 }
-  -- get the original mouse location
-  saveMouse=hs.mouse.absolutePosition()
-  -- left click the fortinet icon, right-click disconnect
-  hs.eventtap.rightClick(fortiIcon)
-  hs.timer.usleep(500000)
-  hs.eventtap.leftClick(fortiClick)
-  -- bring up the console and quit it
-  hs.timer.usleep(500000)
-  hs.eventtap.rightClick(fortiIcon)
-  hs.timer.usleep(500000)
-  hs.eventtap.leftClick(fortiConsole)
-  hs.timer.usleep(500000)
-  frontapp=hs.application.frontmostApplication()
-  hs.timer.usleep(500000)
-  if frontapp:name() == "FortiClient" then
-    hs.eventtap.keyStroke({"cmd"}, "q")
-  else
-    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
-  end
-  -- move the mouse back
-  hs.mouse.absolutePosition(saveMouse)
-end)
-
-hs.urlevent.bind("dropFortinet",function(eventName, params)
-  -- absolute position on the primary screen
-  fortiDisconnect = { x=975; y=630 }
-  saveMouse=hs.mouse.absolutePosition()
-  hs.application.launchOrFocus("Forticlient")
-  fortinetWindow=hs.window.find("Forticlient")
-  fortinetWindow:centerOnScreen(primaryScreen)
-  hs.timer.usleep(500000)
-  frontapp=hs.application.frontmostApplication()
-  if frontapp:name() == "FortiClient" then
-    hs.eventtap.leftClick(fortiDisconnect)
-    hs.eventtap.keyStroke({"cmd"}, "q")
-  else
-    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
-  end
-  hs.mouse.absolutePosition(saveMouse)
-end)
-
--- launch fortivpn and log in
+-- URLs to launch and drop Fortinet
 hs.urlevent.bind("connectFortinet",function(eventName, params)
-  -- variables
-  fortiEndpointMenu = { x=987; y=537 }
-  fortiTierpoint = { x=957 ; y=600 }
-  -- activities
-  mousePosition=hs.mouse.absolutePosition()
   hs.application.launchOrFocus("Forticlient")
   while_counter = 0
   local focusedWindow = hs.window.focusedWindow()
@@ -185,14 +136,6 @@ hs.urlevent.bind("connectFortinet",function(eventName, params)
   do
      while_counter=while_counter+1
      focusedWindow = hs.window.focusedWindow()
---[[ checking to see how long I have to wait for forticlient to come into focus; only for debugging
-     if focusedWindow then
-          print(while_counter .. " : hs.window.focusedWindow():title() = " .. hs.window.focusedWindow():title())
-     else
-          print(while_counter .. ": No focus.")
-     end
-     print(while_counter .. " : hs.application.frontmostApplication():title()" .. hs.application.frontmostApplication():title() .. "\n")
---]]
      hs.timer.usleep(100000)
      if while_counter >= 100 then
           print("Breaking out of watch loop")
@@ -200,19 +143,28 @@ hs.urlevent.bind("connectFortinet",function(eventName, params)
      end
   end
   print(while_counter .. " cycles")   
+  fortiApplication=hs.application.find("com.fortinet.FortiClient")
   hs.timer.usleep(1000000)
-  hs.eventtap.leftClick(fortiEndpointMenu)
-  hs.timer.usleep(500000)
-  -- hs.eventtap.leftClick(fortiTierpoint)
-  hs.eventtap.keyStrokes(".t")
-  hs.eventtap.keyStroke({}, "return")
-  hs.timer.usleep(600000)
-  hs.eventtap.leftClick(fortiTierpoint)
-  -- send the mouse back to where it was
-  hs.timer.usleep(600000)
-  hs.mouse.absolutePosition(mousePosition)
+  hs.eventtap.keyStroke({}, "tab", fortiApplication)
+  hs.timer.usleep(1000000)
+  hs.eventtap.keyStrokes(".t", fortiApplication)
+  hs.timer.usleep(1000000)
+  hs.eventtap.keyStroke({}, "tab", fortiApplication)
+  hs.eventtap.keyStroke({}, "space", fortiApplication)
 end)
 
+hs.urlevent.bind("dropFortinet",function(eventName, params)
+  hs.application.launchOrFocus("Forticlient")
+  fortiApplication=hs.application.find("com.fortinet.FortiClient")
+  hs.timer.usleep(1000000)
+  hs.eventtap.keyStroke({}, "tab", fortiApplication)
+  hs.eventtap.keyStroke({}, "space", fortiApplication)
+  hs.timer.usleep(1000000)
+  hs.eventtap.keyStroke({"cmd"}, "q", fortiApplication)
+end)
+
+----------------------------------------------------------------------------------------------
+-- URLs to launch and drop Azure VPN
 hs.urlevent.bind("connectAzure",function(eventName, params)
   -- variables
   azureProdCommercialClick= { x=760; y=314 }
@@ -253,8 +205,8 @@ hs.urlevent.bind("dropAzure",function(eventName, params)
   end
   hs.mouse.absolutePosition(mousePosition)
 end)
-----------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------
 -- Add VPN status to the menu bar
 vpnMenuStatus=hs.menubar.new()
 vpnMenuStatus:setIcon("images/pad-lock-png-free-download-23_20x20.png")
@@ -268,8 +220,8 @@ hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
     vpnMenuStatus:removeFromMenuBar()
   end
 end)
-----------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------
 -- Clear Outlook reminders. It's a function so can be called by hotkey or URL
 -- also clear the annoying permissions changed notice box. Need to find a way to see if it's present.
 function clearOutlookReminders()
@@ -290,8 +242,8 @@ end)
 hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
   clearOutlookReminders()
 end)
-----------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------
 -- Teams URLs - names should be self-explanatory
 hs.urlevent.bind("teamsMuteMic",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "m",hs.application.find("Microsoft Teams"))
@@ -308,8 +260,8 @@ end)
 hs.urlevent.bind("teamsToggleHand",function(eventName, params)
   hs.eventtap.keyStroke({"cmd", "shift"}, "k",hs.application.find("Microsoft Teams"))
 end)
-----------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------
 -- URL Dispatcher to send applications to Firefox when necessary
 Install:andUse("URLDispatcher", {
   config = {
@@ -322,8 +274,8 @@ Install:andUse("URLDispatcher", {
   -- Enable debug logging if you get unexpected behavior
   -- loglevel = 'debug'
 })
-----------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------
 -- clipboard manager
 Install:andUse("ClipboardTool", {
   -- config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
@@ -341,8 +293,8 @@ Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 -- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
 --   spoon.MicMute:toggleMicMute()
 -- end)
-----------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------
 --[[ WIP
 ----------------------------------------------------------------------------------------------
 -- 2024-01-24 : raise Azure VPN window, hang up VPN and close it - being done by workvpn.sh so commented out
@@ -354,5 +306,97 @@ hs.urlevent.bind("dropAzureVPN",function(eventName, params)
   azurevpnwindow=hs.window.find("Azure VPN")
   hs.application.launchOrFocusByBundleID("com.microsoft.AzureVpnMac")
   azurevpnwindow:centerOnScreen()
+end)
+]]--
+
+--[[ basement - storage and other references
+--## archived 2024-03-26
+hs.urlevent.bind("dropFortinetold",function(eventName, params)
+  -- absolute position on the primary screen
+  fortiDisconnect = { x=975; y=630 }
+  saveMouse=hs.mouse.absolutePosition()
+  hs.application.launchOrFocus("Forticlient")
+  fortinetWindow=hs.window.find("Forticlient")
+  fortinetWindow:centerOnScreen(primaryScreen)
+  hs.timer.usleep(500000)
+  frontapp=hs.application.frontmostApplication()
+  if frontapp:name() == "FortiClient" then
+    hs.eventtap.leftClick(fortiDisconnect)
+    hs.eventtap.keyStroke({"cmd"}, "q")
+  else
+    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
+  end
+  hs.mouse.absolutePosition(saveMouse)
+end)
+
+--## archived 2024-03-26
+-- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
+hs.urlevent.bind("dropFortinetolder",function(eventName, params)
+  fortiIcon = { x=1495; y=11 }
+  fortiClick = { x=1497; y=56 }
+  fortiConsole = { x=1497; y=236 }
+  -- get the original mouse location
+  saveMouse=hs.mouse.absolutePosition()
+  -- left click the fortinet icon, right-click disconnect
+  hs.eventtap.rightClick(fortiIcon)
+  hs.timer.usleep(500000)
+  hs.eventtap.leftClick(fortiClick)
+  -- bring up the console and quit it
+  hs.timer.usleep(500000)
+  hs.eventtap.rightClick(fortiIcon)
+  hs.timer.usleep(500000)
+  hs.eventtap.leftClick(fortiConsole)
+  hs.timer.usleep(500000)
+  frontapp=hs.application.frontmostApplication()
+  hs.timer.usleep(500000)
+  if frontapp:name() == "FortiClient" then
+    hs.eventtap.keyStroke({"cmd"}, "q")
+  else
+    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
+  end
+  -- move the mouse back
+  hs.mouse.absolutePosition(saveMouse)
+end)
+
+--## archived 2024-03-26
+hs.urlevent.bind("connectFortinetold",function(eventName, params)
+  -- variables
+  fortiEndpointMenu = { x=987; y=537 }
+  fortiTierpoint = { x=957 ; y=600 }
+  -- activities
+  mousePosition=hs.mouse.absolutePosition()
+  hs.application.launchOrFocus("Forticlient")
+  while_counter = 0
+  local focusedWindow = hs.window.focusedWindow()
+  while (not focusedWindow or focusedWindow:title() ~= "FortiClient -- Zero Trust Fabric Agent")
+  do
+     while_counter=while_counter+1
+     focusedWindow = hs.window.focusedWindow()
+--[[ checking to see how long I have to wait for forticlient to come into focus; only for debugging
+     if focusedWindow then
+          print(while_counter .. " : hs.window.focusedWindow():title() = " .. hs.window.focusedWindow():title())
+     else
+          print(while_counter .. ": No focus.")
+     end
+     print(while_counter .. " : hs.application.frontmostApplication():title()" .. hs.application.frontmostApplication():title() .. "\n")
+--]]
+     hs.timer.usleep(100000)
+     if while_counter >= 100 then
+          print("Breaking out of watch loop")
+          break
+     end
+  end
+  print(while_counter .. " cycles")
+  hs.timer.usleep(1000000)
+  hs.eventtap.leftClick(fortiEndpointMenu)
+  hs.timer.usleep(500000)
+  -- hs.eventtap.leftClick(fortiTierpoint)
+  hs.eventtap.keyStrokes(".t")
+  hs.eventtap.keyStroke({}, "return")
+  hs.timer.usleep(600000)
+  hs.eventtap.leftClick(fortiTierpoint)
+  -- send the mouse back to where it was
+  hs.timer.usleep(600000)
+  hs.mouse.absolutePosition(mousePosition)
 end)
 ]]--
