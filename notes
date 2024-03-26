@@ -21,6 +21,16 @@ hs.hotkey.getLogLevel and hs.hotkey.setLogLevel
 bindHotKey helper - can bind a hotkey to a single app, or exclude from apps
   https://github.com/muescha/dot_hammerspoon?tab=readme-ov-file
 
+2024-03-26
+# provide lots of details on current windows
+hs.inspect(hs.window.filter.defaultCurrentSpace)
+# specifics on applications and terminals
+hs.application'terminal'
+hs.application'terminal':role()
+hs.window'teams'
+hs.window'teams':application()
+hs.window'teams':application():name()
+
 ====================================================================
 log
 ========
@@ -40,3 +50,4 @@ Fetch a password from keychain using spoon Keychain
     * comment  (-j) -> comment
     * name (-l) -> label
     * where (-s) -> service
+

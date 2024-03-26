@@ -296,7 +296,6 @@ Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 
 ----------------------------------------------------------------------------------------------
 --[[ WIP
-----------------------------------------------------------------------------------------------
 -- 2024-01-24 : raise Azure VPN window, hang up VPN and close it - being done by workvpn.sh so commented out
 hs.urlevent.bind("dropAzureVPN",function(eventName, params)
   --azure_vpn_app=hs.application.find("Azure VPN")
@@ -309,6 +308,7 @@ hs.urlevent.bind("dropAzureVPN",function(eventName, params)
 end)
 ]]--
 
+----------------------------------------------------------------------------------------------
 --[[ basement - storage and other references
 --## archived 2024-03-26
 hs.urlevent.bind("dropFortinetold",function(eventName, params)
@@ -379,7 +379,7 @@ hs.urlevent.bind("connectFortinetold",function(eventName, params)
           print(while_counter .. ": No focus.")
      end
      print(while_counter .. " : hs.application.frontmostApplication():title()" .. hs.application.frontmostApplication():title() .. "\n")
---]]
+--]#]
      hs.timer.usleep(100000)
      if while_counter >= 100 then
           print("Breaking out of watch loop")
