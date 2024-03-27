@@ -31,6 +31,14 @@ hs.window'teams'
 hs.window'teams':application()
 hs.window'teams':application():name()
 
+2024-03-27
+# from http://www.hammerspoon.org/docs/hs.distributednotifications.html
+# discover the notifications that are being posted on your system with some code like this:
+foo = hs.distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo))) end)
+foo:start()
+
+# play with caps lock LED
+hs.hid.led.set("caps",true)
 ====================================================================
 log
 ========

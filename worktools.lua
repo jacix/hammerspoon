@@ -21,7 +21,8 @@ change log
   2024-03-07 - outlook reminder clear-o-matic also clears permissions notice window
   2024-03-12 - fix typo: Leftclick -> leftClick
   2024-03-13 - clipboardtool: store 100 entries, not 250. Add max_entry_size to a comment FFR; hyperL: handle DEVSD portal
-  2024-03-26 - connectFortinet/dropFortinet: replace mouse clicks with keystrokes send directly to the application
+  2024-03-26 - connectFortinet/dropFortinet: replace mouse clicks with keystrokes sent directly to the application
+  2024-03-27 - ClipboardTool: set max_entry_size=1024
 --]]
 
 -- variables used by multiple bindings
@@ -144,11 +145,14 @@ hs.urlevent.bind("connectFortinet",function(eventName, params)
   end
   print(while_counter .. " cycles")   
   fortiApplication=hs.application.find("com.fortinet.FortiClient")
-  hs.timer.usleep(1000000)
+  -- hs.timer.usleep(1000000)
+  os.execute("sleep 0.5")
   hs.eventtap.keyStroke({}, "tab", fortiApplication)
-  hs.timer.usleep(1000000)
+  --hs.timer.usleep(1000000)
+  os.execute("sleep 0.5")
   hs.eventtap.keyStrokes(".t", fortiApplication)
-  hs.timer.usleep(1000000)
+  --hs.timer.usleep(1000000)
+  os.execute("sleep 0.5")
   hs.eventtap.keyStroke({}, "tab", fortiApplication)
   hs.eventtap.keyStroke({}, "space", fortiApplication)
 end)
@@ -279,7 +283,7 @@ Install:andUse("URLDispatcher", {
 -- clipboard manager
 Install:andUse("ClipboardTool", {
   -- config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
-  config = { menubar_title = "\u{1f4ce}", hist_size = 100 },
+  config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
   hotkeys = { show_clipboard = { hyper, "V" }}
 })
 spoon.ClipboardTool:start()
