@@ -23,6 +23,7 @@ change log
   2024-03-13 - clipboardtool: store 100 entries, not 250. Add max_entry_size to a comment FFR; hyperL: handle DEVSD portal
   2024-03-26 - connectFortinet/dropFortinet: replace mouse clicks with keystrokes sent directly to the application
   2024-03-27 - ClipboardTool: set max_entry_size=1024
+  2024-03-28 - Hyper-L: add custom tag for jenkins pipelines
 --]]
 
 -- variables used by multiple bindings
@@ -48,11 +49,14 @@ hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", f
     return
   elseif mypasteboard:match("https://github.com/.*/pull/") then
     --_, _, repo, pr = string.find(mypasteboard, ".*github.com/(.*)/pull/(.*)")
-    repo, pr = mypasteboard:match(".*github.com/(.*)/pull/(.*)")
+    repo, pr = mypasteboard:match("https://github.com/(.*)/pull/(.*)")
     tag = "PR:" .. repo .. ";" .. pr
   elseif mypasteboard:match("https://github.com") then
-    repo = mypasteboard:match(".*github.com/(.*)")
+    repo = mypasteboard:match("https://github.com/(.*)")
     tag = "GH:" .. repo
+  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job/.*job") then
+    controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
+    tag = "JK:" .. controller .. ">" .. folder .. ">" .. pipeline .. ">" .. branch .. ">" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     tag = mypasteboard:match(".*=.*=(.*[0-9a-z])")
   elseif mypasteboard:match("https?://") then
