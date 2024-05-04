@@ -24,6 +24,7 @@ change log
   2024-03-26 - connectFortinet/dropFortinet: replace mouse clicks with keystrokes sent directly to the application
   2024-03-27 - ClipboardTool: set max_entry_size=1024
   2024-03-28 - Hyper-L: add custom tag for jenkins pipelines
+  2024-05-04 - Hyper-L: add custom tag for shorter jenkins pipelines
 --]]
 
 -- variables used by multiple bindings
@@ -57,6 +58,9 @@ hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", f
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job/.*job") then
     controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
     tag = "JK:" .. controller .. ">" .. folder .. ">" .. pipeline .. ">" .. branch .. ">" .. build
+  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job") then
+    controller, pipeline, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/(.*)")
+    tag = "JK:" .. controller .. ">" .. pipeline .. ">" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     tag = mypasteboard:match(".*=.*=(.*[0-9a-z])")
   elseif mypasteboard:match("https?://") then
@@ -274,7 +278,7 @@ end)
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
-      { "ci.intouchhealth.io", "org.mozilla.firefox" }
+      { "ci.intouchhealthh.io", "org.mozilla.firefox" }
     },
     default_handler = "com.apple.Safari"
   },
