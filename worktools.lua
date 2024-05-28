@@ -25,6 +25,7 @@ change log
   2024-03-27 - ClipboardTool: set max_entry_size=1024
   2024-03-28 - Hyper-L: add custom tag for jenkins pipelines
   2024-05-04 - Hyper-L: add custom tag for shorter jenkins pipelines
+  2024-05-28 - removed privs closer from function clearOutlookReminders; created closePrivsReminder as function and URL binding
 --]]
 
 -- variables used by multiple bindings
@@ -243,6 +244,9 @@ function clearOutlookReminders()
   else
     hs.alert.show("What reminders? (hint: I can't find a reminders window.")
   end
+end
+
+function closePrivsReminder()
   privs_close_x = { x = 1374.40234375, y = 45.69921875 }
   hs.eventtap.leftClick(privs_close_x)
 end
@@ -253,6 +257,10 @@ end)
 
 hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
   clearOutlookReminders()
+end)
+
+hs.urlevent.bind("closePrivsReminder",function(eventName,params)
+  closePrivsReminder()
 end)
 
 ----------------------------------------------------------------------------------------------
