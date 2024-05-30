@@ -27,11 +27,13 @@ change log
   2024-05-04 - Hyper-L: add custom tag for shorter jenkins pipelines
   2024-05-28 - removed privs closer from function clearOutlookReminders; created closePrivsReminder as function and URL binding
   2024-05-29 - function closePrivsReminder: return mouse & resume focus; move xy coordinates variable to top of the file
+  2024-05-29 - function closePrivsReminder: wasn't always closing, so now move mouse to privs_close_box, click, and move back
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
 primaryScreen=hs.screen.primaryScreen()
 privs_close_x = { x = 1374.40234375, y = 45.69921875 }
+privs_close_box = { x = 1386.40234375, y = 56.69921875 }
 
 -- please allow me to introduce myself
 hs.alert.show("Loading work tools")
@@ -251,8 +253,10 @@ end
 function closePrivsReminder()
   mousePosition=hs.mouse.absolutePosition()
   focused_window = hs.window.focusedWindow()
+  hs.mouse.absolutePosition(privs_close_box)
+  hs.timer.usleep(200000)
   hs.eventtap.leftClick(privs_close_x)
-  hs.timer.usleep(500000)
+  hs.timer.usleep(200000)
   hs.mouse.absolutePosition(mousePosition)
   focused_window:focus()
 end
