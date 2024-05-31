@@ -28,6 +28,7 @@ change log
   2024-05-28 - removed privs closer from function clearOutlookReminders; created closePrivsReminder as function and URL binding
   2024-05-29 - function closePrivsReminder: return mouse & resume focus; move xy coordinates variable to top of the file
   2024-05-29 - function closePrivsReminder: wasn't always closing, so now move mouse to privs_close_box, click, and move back
+  2024-05-30 - add function and urlbinding to toggle permissionizer
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -240,7 +241,6 @@ end)
 
 ----------------------------------------------------------------------------------------------
 -- Clear Outlook reminders. It's a function so can be called by hotkey or URL
--- also clear the annoying permissions changed notice box. Need to find a way to see if it's present.
 function clearOutlookReminders()
   reminders_window=hs.window.find("Reminder")
   if reminders_window then
@@ -250,6 +250,30 @@ function clearOutlookReminders()
   end
 end
 
+hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
+  clearOutlookReminders()
+end)
+
+hotkey_hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
+  clearOutlookReminders()
+end)
+
+----------------------------------------------------------------------------------------------
+-- run privileges and enable
+function togglePrivs()
+  privsApplication=hs.application.launchOrFocus("Privileges")
+  privsApplication=hs.application.find("com.sap.privileges")
+  hs.timer.usleep(500000)
+  hs.eventtap.keyStroke({}, "tab", privsApplication)
+  hs.eventtap.keyStroke({}, "space", privsApplication)
+end
+
+hs.urlevent.bind("togglePrivs",function(eventName,params)
+  togglePrivs()
+end)
+
+----------------------------------------------------------------------------------------------
+-- clear the annoying permissions changed notice box. Need to find a way to see if it's present.
 function closePrivsReminder()
   mousePosition=hs.mouse.absolutePosition()
   focused_window = hs.window.focusedWindow()
@@ -260,14 +284,6 @@ function closePrivsReminder()
   hs.mouse.absolutePosition(mousePosition)
   focused_window:focus()
 end
-
-hotkey_hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
-  clearOutlookReminders()
-end)
-
-hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
-  clearOutlookReminders()
-end)
 
 hs.urlevent.bind("closePrivsReminder",function(eventName,params)
   closePrivsReminder()
