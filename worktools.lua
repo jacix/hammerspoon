@@ -29,6 +29,7 @@ change log
   2024-05-29 - function closePrivsReminder: return mouse & resume focus; move xy coordinates variable to top of the file
   2024-05-29 - function closePrivsReminder: wasn't always closing, so now move mouse to privs_close_box, click, and move back
   2024-05-30 - add function and urlbinding to toggle permissionizer
+  2024-05-31 - Hyper-L: handle Excel (same as Outlook); handle jenkins.teladoc.io (e.g.: cluster.up/platform.up)
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -61,7 +62,10 @@ hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", f
   elseif mypasteboard:match("https://github.com") then
     repo = mypasteboard:match("https://github.com/(.*)")
     tag = "GH:" .. repo
-  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job/.*job") then
+  elseif mypasteboard:match("https://jenkins.teladoc.io/job/.*job") then
+    eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
+    tag = "JK:" .. eod .. ">" .. folder .. ">" .. pipeline .. ">" .. build
+  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
     controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
     tag = "JK:" .. controller .. ">" .. folder .. ">" .. pipeline .. ">" .. branch .. ">" .. build
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job") then
@@ -98,6 +102,15 @@ hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", f
     hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
     hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
     hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "return", focused_app)
+  elseif (frontmost_app_title == "Microsoft Excel") then
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+    hs.eventtap.keyStrokes(mypasteboard)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "return", focused_app)
   elseif ( focused_window_title:match("CONFLUENCE DATA CENTER") or focused_window_title:match("JIRA DATA CENTER")) then 
