@@ -19,6 +19,7 @@ change log:
                  mic-mute, clipboard manager to worktools; music URLs to hometools; vader loads music-webserver
   2024-03-18 - add mouseHighlight as hyper-shift-M; minor basement cleanup
   2024-03-26 - hyper-F: add PIDs, roles, IDs
+  2024-06-03 - add m3po
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -47,7 +48,7 @@ Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hype
 myhostname = hs.host.localizedName()
 if myhostname == "REM-JasonSchechner" or myhostname == "Jason Schechner Y3WLD0C6NF" then
   local workstuff = require('worktools')
-elseif myhostname == "vader" then
+elseif myhostname == "vader" or myhostname == "m3po" then
   local homestuff = require('hometools')
   local homestuff = require('music-webserver')
 else
