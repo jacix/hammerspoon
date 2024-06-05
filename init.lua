@@ -20,6 +20,7 @@ change log:
   2024-03-18 - add mouseHighlight as hyper-shift-M; minor basement cleanup
   2024-03-26 - hyper-F: add PIDs, roles, IDs
   2024-06-03 - add m3po
+  2024-06-03 - move spoon ClipboardTool here from worktools.lua, excluding vader; use variable "hyper" where it belongs
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -55,6 +56,18 @@ else
   hs.alert("I don't recognize " .. myhostname .. " so not loading work or home tools.",4)
 end
 
+----------------------------------------------------------------------------------------------
+-- clipboard manager
+-- vader has a problem with the clipboard manager.... so
+if myhostname ~= "vader" then
+  Install:andUse("ClipboardTool", {
+    -- config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
+    config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
+    hotkeys = { show_clipboard = { hyper, "V" }}
+  })
+  spoon.ClipboardTool:start()
+end
+
 Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
 
 ----------------------------------------------------------------------------------------------
@@ -80,7 +93,7 @@ spoon.RecursiveBinder.helperFormat = {
 --]]
 
 hs.loadSpoon("AClock")
-spoon.AClock:init() hs.hotkey.bind({"cmd", "alt", "ctrl"}, "C", "A Clock", function()
+spoon.AClock:init() hs.hotkey.bind(hyper, "C", "A Clock", function()
   spoon.AClock:toggleShow()
 end)
 ----------------------------------------------------------------------------------------------
@@ -88,10 +101,10 @@ end)
 -- enable Spotlight support
 hs.application.enableSpotlightForNameSearches(true)
 -- show registered hotkeys
-hotkey_HyperH = hs.hotkey.showHotkeys({"cmd", "alt", "ctrl"}, "H")
+hotkey_HyperH = hs.hotkey.showHotkeys(hyper, "H")
 
 -- show the name of the front-most application. Good for troubleshooting.
-hotkey_HyperF = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F", "front-most app+window; focused window", function()
+hotkey_HyperF = hs.hotkey.bind(hyper, "F", "front-most app+window; focused window", function()
   -- These calls can be made in alert.show, but for troubleshooting you can ref them in the console
   frontmost_application = hs.application.frontmostApplication()
   frontmost_window = hs.window.frontmostWindow()
@@ -127,7 +140,7 @@ hs.urlevent.bind("chill",function(eventName, params)
     setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
 end)
 -- HK to check whether sleep is enabled or not
-hotkey_HyperS = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "S", "Is sleep disabled?", function()
+hotkey_HyperS = hs.hotkey.bind(hyper, "S", "Is sleep disabled?", function()
   if hs.caffeinate.get("displayIdle") then
     hs.alert.show("DisplayIdle disabled. (No sleep till Brooklyn.)")
   else

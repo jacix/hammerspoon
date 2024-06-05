@@ -30,6 +30,7 @@ change log
   2024-05-29 - function closePrivsReminder: wasn't always closing, so now move mouse to privs_close_box, click, and move back
   2024-05-30 - add function and urlbinding to toggle permissionizer
   2024-05-31 - Hyper-L: handle Excel (same as Outlook); handle jenkins.teladoc.io (e.g.: cluster.up/platform.up)
+  2024-06-04 - move spoon ClipboardTool to init.lua; use variable "hyper" where it belongs
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -43,11 +44,7 @@ hs.alert.show("Loading work tools")
 -- take a URL from the clipboard and make an application-friendly hyperlink
 -- to do:
 -- * Figure out how to click in the text box in the Teams window after creating a link.
-hotkey_hyperT = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "T", "Old Web link-enator", function()
-  hs.alert.show("Nope. hyper-L, genius")
-end)
-
-hotkey_hyperL = hs.hotkey.bind({"cmd", "alt", "ctrl"}, "L", "Web link-enator", function()
+hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- clear variables
   pr, repo, tag = nil
   -- craft a tag from the pasteboard
@@ -334,6 +331,7 @@ Install:andUse("URLDispatcher", {
   -- loglevel = 'debug'
 })
 
+--[[ moved to init.lua on 2024-06-04. delete later
 ----------------------------------------------------------------------------------------------
 -- clipboard manager
 Install:andUse("ClipboardTool", {
@@ -342,6 +340,7 @@ Install:andUse("ClipboardTool", {
   hotkeys = { show_clipboard = { hyper, "V" }}
 })
 spoon.ClipboardTool:start()
+]]--
 
 -- this works but no help in hyper-h
 Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
