@@ -31,6 +31,7 @@ change log
   2024-05-30 - add function and urlbinding to toggle permissionizer
   2024-05-31 - Hyper-L: handle Excel (same as Outlook); handle jenkins.teladoc.io (e.g.: cluster.up/platform.up)
   2024-06-04 - move spoon ClipboardTool to init.lua; use variable "hyper" where it belongs
+  2024-06-11 - Hyper-L: simplify tags for github, jenkins
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -47,27 +48,22 @@ hs.alert.show("Loading work tools")
 hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- clear variables
   pr, repo, tag = nil
-  -- craft a tag from the pasteboard
+  -- craft a tag from the pasteboard, removing the trailing slash if present
   mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")
   if not mypasteboard:match("https?://") then
     hs.alert.show("Clipboard ain't right.\n clipboard: " .. mypasteboard , 4)
     return
-  elseif mypasteboard:match("https://github.com/.*/pull/") then
-    --_, _, repo, pr = string.find(mypasteboard, ".*github.com/(.*)/pull/(.*)")
-    repo, pr = mypasteboard:match("https://github.com/(.*)/pull/(.*)")
-    tag = "PR:" .. repo .. ";" .. pr
   elseif mypasteboard:match("https://github.com") then
-    repo = mypasteboard:match("https://github.com/(.*)")
-    tag = "GH:" .. repo
+    tag=mypasteboard:gsub("https://github.com/","github/")
   elseif mypasteboard:match("https://jenkins.teladoc.io/job/.*job") then
     eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
-    tag = "JK:" .. eod .. ">" .. folder .. ">" .. pipeline .. ">" .. build
+    tag = "jenkins/" .. eod .. "/" .. folder .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
     controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
-    tag = "JK:" .. controller .. ">" .. folder .. ">" .. pipeline .. ">" .. branch .. ">" .. build
+    tag = "jenkins/" .. controller .. "/" .. folder .. "/" .. pipeline .. "/" .. branch .. "/" .. build
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job") then
     controller, pipeline, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/(.*)")
-    tag = "JK:" .. controller .. ">" .. pipeline .. ">" .. build
+    tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     tag = mypasteboard:match(".*=.*=(.*[0-9a-z])")
   elseif mypasteboard:match("https?://") then
