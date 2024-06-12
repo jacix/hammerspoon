@@ -66,8 +66,8 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
-    tag = mypasteboard:gsub(";.*",""):match(".*=(.*.-)")
-    -- also works: tag, _ = mypasteboard:gsub(";.*",""):gsub(".*=","")
+    tag = mypasteboard:gsub(";sort.*",""):match(".*=(.*[0-9a-z])")
+    -- also works: tag, _ = mypasteboard:gsub(";sort.*",""):gsub(".*=","")
   elseif mypasteboard:match("https?://") then
     tag = string.match(mypasteboard, ".*/(.*)")
   end
