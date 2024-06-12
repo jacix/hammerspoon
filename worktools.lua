@@ -32,6 +32,7 @@ change log
   2024-05-31 - Hyper-L: handle Excel (same as Outlook); handle jenkins.teladoc.io (e.g.: cluster.up/platform.up)
   2024-06-04 - move spoon ClipboardTool to init.lua; use variable "hyper" where it belongs
   2024-06-11 - Hyper-L: simplify tags for github, jenkins; strip selectors off end of AWS console URLs
+  2024-06-12 - Hyper-L: tighten jenkins.teladoc.io URL match; AWS tag handles "view" in addition to "sort"
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -55,7 +56,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     return
   elseif mypasteboard:match("https://github.com") then
     tag=mypasteboard:gsub("https://github.com/","github/")
-  elseif mypasteboard:match("https://jenkins.teladoc.io/job/.*job") then
+  elseif mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)") then
     eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
     tag = "jenkins/" .. eod .. "/" .. folder .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
@@ -66,7 +67,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
-    tag = mypasteboard:gsub(";sort.*",""):match(".*=(.*[0-9a-z])")
+    tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
     -- also works: tag, _ = mypasteboard:gsub(";sort.*",""):gsub(".*=","")
   elseif mypasteboard:match("https?://") then
     tag = string.match(mypasteboard, ".*/(.*)")
