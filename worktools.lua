@@ -31,7 +31,7 @@ change log
   2024-05-30 - add function and urlbinding to toggle permissionizer
   2024-05-31 - Hyper-L: handle Excel (same as Outlook); handle jenkins.teladoc.io (e.g.: cluster.up/platform.up)
   2024-06-04 - move spoon ClipboardTool to init.lua; use variable "hyper" where it belongs
-  2024-06-11 - Hyper-L: simplify tags for github, jenkins
+  2024-06-11 - Hyper-L: simplify tags for github, jenkins; strip selectors off end of AWS console URLs
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -65,7 +65,9 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     controller, pipeline, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/(.*)")
     tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
-    tag = mypasteboard:match(".*=.*=(.*[0-9a-z])")
+    --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
+    tag = mypasteboard:gsub(";.*",""):match(".*=(.*.-)")
+    -- also works: tag, _ = mypasteboard:gsub(";.*",""):gsub(".*=","")
   elseif mypasteboard:match("https?://") then
     tag = string.match(mypasteboard, ".*/(.*)")
   end
