@@ -33,12 +33,13 @@ change log
   2024-06-04 - move spoon ClipboardTool to init.lua; use variable "hyper" where it belongs
   2024-06-11 - Hyper-L: simplify tags for github, jenkins; strip selectors off end of AWS console URLs
   2024-06-12 - Hyper-L: tighten jenkins.teladoc.io URL match; AWS tag handles "view" in addition to "sort"
+  2024-06-17 - function closePrivsReminder: check primary screen height to determine X point; wait over X instead of box 
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
 primaryScreen=hs.screen.primaryScreen()
-privs_close_x = { x = 1374.40234375, y = 45.69921875 }
-privs_close_box = { x = 1386.40234375, y = 56.69921875 }
+-- privs_close_x = { x = 1374.40234375, y = 45.69921875 }
+-- privs_close_box = { x = 1386.40234375, y = 56.69921875 }
 
 -- please allow me to introduce myself
 hs.alert.show("Loading work tools")
@@ -284,9 +285,23 @@ end)
 ----------------------------------------------------------------------------------------------
 -- clear the annoying permissions changed notice box. Need to find a way to see if it's present.
 function closePrivsReminder()
+  -- first find the built-in screen's resolution so I know where the X is
+  --primary_screen=hs.screen.primaryScreen()
+  primaryScreenHeight=primaryScreen:currentMode()["h"]
+  if primaryScreenHeight == 1080 then
+    privs_close_x = { x = 1374.40234375, y = 45.69921875 }
+    print("closing on primary screen: " .. hs.inspect(primaryScreen:currentMode()))
+  elseif primary_screen_height == 1117 then
+    privs_close_x = { x = 1374.40234375, y = 57.3984375 }
+    print("closing on primary screen: " .. hs.inspect(primaryScreen:currentMode()))
+  else
+    print("primaryScreenHeight unknown: " .. hs.inspect(primaryScreen:currentMode()))
+    return
+  end
   mousePosition=hs.mouse.absolutePosition()
   focused_window = hs.window.focusedWindow()
-  hs.mouse.absolutePosition(privs_close_box)
+  --hs.mouse.absolutePosition(privs_close_box)
+  hs.mouse.absolutePosition(privs_close_x)
   hs.timer.usleep(200000)
   hs.eventtap.leftClick(privs_close_x)
   hs.timer.usleep(200000)
