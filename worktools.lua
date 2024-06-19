@@ -34,12 +34,13 @@ change log
   2024-06-11 - Hyper-L: simplify tags for github, jenkins; strip selectors off end of AWS console URLs
   2024-06-12 - Hyper-L: tighten jenkins.teladoc.io URL match; AWS tag handles "view" in addition to "sort"
   2024-06-17 - function closePrivsReminder: check primary screen height to determine X point; wait over X instead of box 
+  2024-06-18 - function closePrivsReminder: waiting over X doesn't always work, so wait over box, move to X, click X
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
 primaryScreen=hs.screen.primaryScreen()
 -- privs_close_x = { x = 1374.40234375, y = 45.69921875 }
--- privs_close_box = { x = 1386.40234375, y = 56.69921875 }
+privs_close_box = { x = 1386.40234375, y = 61.69921875 }
 
 -- please allow me to introduce myself
 hs.alert.show("Loading work tools")
@@ -300,11 +301,13 @@ function closePrivsReminder()
   end
   mousePosition=hs.mouse.absolutePosition()
   focused_window = hs.window.focusedWindow()
-  --hs.mouse.absolutePosition(privs_close_box)
+  hs.mouse.absolutePosition(privs_close_box)
+  -- hs.mouse.absolutePosition(privs_close_x)
+  hs.timer.usleep(100000)
   hs.mouse.absolutePosition(privs_close_x)
-  hs.timer.usleep(200000)
+  hs.timer.usleep(100000)
   hs.eventtap.leftClick(privs_close_x)
-  hs.timer.usleep(200000)
+  hs.timer.usleep(100000)
   hs.mouse.absolutePosition(mousePosition)
   focused_window:focus()
 end
