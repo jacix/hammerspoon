@@ -35,6 +35,7 @@ change log
   2024-06-12 - Hyper-L: tighten jenkins.teladoc.io URL match; AWS tag handles "view" in addition to "sort"
   2024-06-17 - function closePrivsReminder: check primary screen height to determine X point; wait over X instead of box 
   2024-06-18 - function closePrivsReminder: waiting over X doesn't always work, so wait over box, move to X, click X
+  2024-06-28 - add Hyper-D: rename compliance docs based on what's in the pasteboard
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -301,9 +302,9 @@ function closePrivsReminder()
   end
   mousePosition=hs.mouse.absolutePosition()
   focused_window = hs.window.focusedWindow()
-  hs.mouse.absolutePosition(privs_close_box)
+  -- hs.mouse.absolutePosition(privs_close_box)
   -- hs.mouse.absolutePosition(privs_close_x)
-  hs.timer.usleep(100000)
+  hs.timer.usleep(300000)
   hs.mouse.absolutePosition(privs_close_x)
   hs.timer.usleep(100000)
   hs.eventtap.leftClick(privs_close_x)
@@ -339,7 +340,7 @@ end)
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
-      { "ci.intouchhealthh.io", "org.mozilla.firefox" }
+      { "ci.intouchhealth.io", "org.mozilla.firefox" }
     },
     default_handler = "com.apple.Safari"
   },
@@ -368,6 +369,34 @@ Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 -- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
 --   spoon.MicMute:toggleMicMute()
 -- end)
+
+-- copied on 2024-06-19 from https://www.reddit.com/r/hammerspoon/comments/og0tio/move_mouse_linearly
+function movemouse(x1,y1,x2,y2,sleep)
+  local xdiff = x2 - x1
+  local ydiff = y2 - y1
+  local loop = math.floor( math.sqrt((xdiff*xdiff)+(ydiff*ydiff)) )
+  local xinc = xdiff / loop
+  local yinc = ydiff / loop
+  sleep = math.floor((sleep * 1000000) / loop)
+  for i=1,loop do
+    x1 = x1 + xinc
+    y1 = y1 + yinc
+    hs.mouse.absolutePosition({x = math.floor(x1), y = math.floor(y1)})
+    hs.timer.usleep(sleep)
+  end
+  hs.mouse.absolutePosition({x = math.floor(x2), y = math.floor(y2)})
+end
+
+-- rename compliance docs based on what's in the pastebuffer
+hotkey_hyperD = hs.hotkey.bind(hyper, "D", "compliance docs", function()
+  doc_name = hs.pasteboard.getContents():gsub("\n","_"):gsub("/$","") .. "_"
+  hs.eventtap.leftClick(hs.mouse.absolutePosition())
+  hs.timer.usleep(500000)
+  hs.eventtap.keyStroke({"alt"}, "left")
+  hs.timer.usleep(500000)
+  hs.eventtap.keyStrokes(doc_name .. "\n")
+end)
+
 
 ----------------------------------------------------------------------------------------------
 --[[ WIP
