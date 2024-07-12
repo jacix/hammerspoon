@@ -36,6 +36,7 @@ change log
   2024-06-17 - function closePrivsReminder: check primary screen height to determine X point; wait over X instead of box 
   2024-06-18 - function closePrivsReminder: waiting over X doesn't always work, so wait over box, move to X, click X
   2024-06-28 - add Hyper-D: rename compliance docs based on what's in the pasteboard
+  2024-07-11 - Hyper-L: add jenkins-prod2.shared.aws.teladoc.com
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -59,6 +60,9 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     return
   elseif mypasteboard:match("https://github.com") then
     tag=mypasteboard:gsub("https://github.com/","github/")
+  elseif mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)") then
+    folder, pipeline, build = mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)")
+    tag = "jenkins-prod2/" .. folder .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)") then
     eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
     tag = "jenkins/" .. eod .. "/" .. folder .. "/" .. pipeline .. "/" .. build
