@@ -21,6 +21,7 @@ change log:
   2024-03-26 - hyper-F: add PIDs, roles, IDs
   2024-06-03 - add m3po
   2024-06-03 - move spoon ClipboardTool here from worktools.lua, excluding vader; use variable "hyper" where it belongs
+  2024-07-16 - reduce clipboard history to 50 items, 512 bytes
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -62,7 +63,7 @@ end
 if myhostname ~= "vader" then
   Install:andUse("ClipboardTool", {
     -- config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
-    config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
+    config = { menubar_title = "\u{1f4ce}", hist_size = 50, max_entry_size=512 },
     hotkeys = { show_clipboard = { hyper, "V" }}
   })
   spoon.ClipboardTool:start()
