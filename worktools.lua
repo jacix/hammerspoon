@@ -37,6 +37,7 @@ change log
   2024-06-18 - function closePrivsReminder: waiting over X doesn't always work, so wait over box, move to X, click X
   2024-06-28 - add Hyper-D: rename compliance docs based on what's in the pasteboard
   2024-07-11 - Hyper-L: add jenkins-prod2.shared.aws.teladoc.com
+  2024-08-06 - closePrivsReminder: handle nul focused_window
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -314,7 +315,11 @@ function closePrivsReminder()
   hs.eventtap.leftClick(privs_close_x)
   hs.timer.usleep(100000)
   hs.mouse.absolutePosition(mousePosition)
-  focused_window:focus()
+  if focused_window then
+    focused_window:focus()
+  else 
+    print("Privs closer - no focused window. Oops")
+  end
 end
 
 hs.urlevent.bind("closePrivsReminder",function(eventName,params)
