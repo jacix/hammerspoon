@@ -24,6 +24,7 @@ change log:
   2024-07-16 - reduce clipboard history to 50 items, 512 bytes
   2024-07-19 - clipboard history back to 100/1k
   2024-08-06 - variablize clipboardtool_hist_size, clipboardtool_max_entry_size
+  2024-08-28 - add shift-hyper-W - show window findenheimer; add pop-lips-to-findenheimer but too many false positives. disabled.
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -194,6 +195,24 @@ function mouseHighlight()
     end)
 end
 hotkey_ShiftHyperM = hs.hotkey.bind(shift_hyper, "M", "MouseFinder", mouseHighlight)
+hs.hints.showTitleThresh=50
+hotkey_ShiftHyperW = hs.hotkey.bind(shift_hyper, "W", "WindowFindenheimer", function() hs.hints.windowHints() end)
+
+-- testCallbackFn = function(result) print("Callback Result: " .. result) end
+-- or: function testCallbackFn(result) print("Callback Result: " .. result) end
+
+-- 2024-08-28
+-- silly setup to show windowHints when you pop your lips
+function handle_noises(incoming)
+  print("handle_noises just got a " .. incoming)
+  if incoming == 3 then
+    hs.hints.windowHints()
+  end
+  incoming=0
+end
+popWindows=hs.noises.new(handle_noises)
+-- popWindows:start()
+--------------------
 
 ------------------------------------------------------------------------------------------------------------------------
 --[[ basement: storage and references (and maybe hidden treasures)

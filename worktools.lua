@@ -38,6 +38,7 @@ change log
   2024-06-28 - add Hyper-D: rename compliance docs based on what's in the pasteboard
   2024-07-11 - Hyper-L: add jenkins-prod2.shared.aws.teladoc.com
   2024-08-06 - closePrivsReminder: handle nul focused_window
+  2024-08-28 - 1-step closer to auto-connecting azure vpn; remove clipboard manager
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -166,13 +167,13 @@ hs.urlevent.bind("connectFortinet",function(eventName, params)
   local focusedWindow = hs.window.focusedWindow()
   while (not focusedWindow or focusedWindow:title() ~= "FortiClient -- Zero Trust Fabric Agent")
   do
-     while_counter=while_counter+1
-     focusedWindow = hs.window.focusedWindow()
-     hs.timer.usleep(100000)
-     if while_counter >= 100 then
-          print("Breaking out of watch loop")
-          break
-     end
+    while_counter=while_counter+1
+    focusedWindow = hs.window.focusedWindow()
+    hs.timer.usleep(100000)
+    if while_counter >= 100 then
+      print("Breaking out of watch loop")
+      break
+    end
   end
   print(while_counter .. " cycles")   
   fortiApplication=hs.application.find("com.fortinet.FortiClient")
@@ -199,7 +200,49 @@ hs.urlevent.bind("dropFortinet",function(eventName, params)
 end)
 
 ----------------------------------------------------------------------------------------------
--- URLs to launch and drop Azure VPN
+-- URLs to launch and drop AzureVPN
+
+hs.urlevent.bind("connectAzure",function(eventName, params)
+  local vpn_to_launch_name = "Azure VPN Client"
+  local vpn_to_launch_bundleid = "com.microsoft.AzureVpnMac"
+  hs.application.launchOrFocus(vpn_to_launch_name)
+  while_counter = 0
+  local focusedWindow = hs.window.focusedWindow()
+  while (not focusedWindow or focusedWindow:title() ~= vpn_to_launch_name)
+  do
+    while_counter=while_counter+1
+    focusedWindow = hs.window.focusedWindow()
+    hs.timer.usleep(100000)
+    if while_counter >= 100 then
+      print("Breaking out of watch loop for " .. vpn_to_launch_name)
+          break
+     end
+  end
+  print(while_counter .. " cycles")
+  vpnApplication=hs.application.find(vpn_to_launch_bundleid)
+--[[ "tab, p, space" worked briefly, then stopped.  Look into using accessibility
+https://www.hammerspoon.org/docs/hs.axuielement.html
+hs.axuielement.applicationElement(vpnApplication)
+hs.inspect(hs.axuielement.applicationElement(vpnApplication):allAttributeValues())
+# works if the mouse is over the "connect" button. Not much help since I can just click it.
+hs.inspect(hs.axuielement.applicationElement(vpnApplication):elementAtPosition(absolute_mouse))
+# this does work, but is clumsy
+1. enable accessibility full keyboard access (shortcut or ctrl-f1 (or ctrl-f7?)
+2. click home
+3. type "p"
+4. tab-z, enter (will toggle connection)
+
+
+--]]
+  hs.eventtap.keyStroke({}, "tab", vpnApplication)
+  os.execute("sleep 0.5")
+  hs.eventtap.keyStroke({}, "p", vpnApplication)
+  os.execute("sleep 0.5")
+  hs.eventtap.keyStroke({}, "space", vpnApplication)
+end)
+
+----------------------------------------------------------------------------------------------
+--[[ the old way, which doesn't work because the VPN options move around.
 hs.urlevent.bind("connectAzure",function(eventName, params)
   -- variables
   azureProdCommercialClick= { x=760; y=314 }
@@ -217,7 +260,7 @@ hs.urlevent.bind("connectAzure",function(eventName, params)
   hs.timer.usleep(500000)
   hs.mouse.absolutePosition(mousePosition)
 end)
-
+--]]
 hs.urlevent.bind("dropAzure",function(eventName, params)
   -- variables
   azureProdCommercialClick= { x=760; y=314 }
@@ -358,17 +401,6 @@ Install:andUse("URLDispatcher", {
   -- loglevel = 'debug'
 })
 
---[[ moved to init.lua on 2024-06-04. delete later
-----------------------------------------------------------------------------------------------
--- clipboard manager
-Install:andUse("ClipboardTool", {
-  -- config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
-  config = { menubar_title = "\u{1f4ce}", hist_size = 100, max_entry_size=1024 },
-  hotkeys = { show_clipboard = { hyper, "V" }}
-})
-spoon.ClipboardTool:start()
-]]--
-
 -- this works but no help in hyper-h
 Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 
@@ -406,6 +438,11 @@ hotkey_hyperD = hs.hotkey.bind(hyper, "D", "compliance docs", function()
   hs.eventtap.keyStrokes(doc_name .. "\n")
 end)
 
+
+----------------------------------------------------------------------------------------------
+--[[ stuff to play with later
+hs.tabs.enableForApp("Teams") - https://www.hammerspoon.org/docs/hs.tabs.html
+]]--
 
 ----------------------------------------------------------------------------------------------
 --[[ WIP
