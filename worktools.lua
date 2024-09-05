@@ -39,6 +39,7 @@ change log
   2024-07-11 - Hyper-L: add jenkins-prod2.shared.aws.teladoc.com
   2024-08-06 - closePrivsReminder: handle nul focused_window
   2024-08-28 - 1-step closer to auto-connecting azure vpn; remove clipboard manager
+  2024-09-05 - Hyper-L: clean up and generalize jenkins matches = drop "/job" and gsub the URL instead of using capture groups
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -61,24 +62,39 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.alert.show("Clipboard ain't right.\n clipboard: " .. mypasteboard , 4)
     return
   elseif mypasteboard:match("https://github.com") then
+    print("link-o-matic: github")
     tag=mypasteboard:gsub("https://github.com/","github/")
-  elseif mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)") then
-    folder, pipeline, build = mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)")
-    tag = "jenkins-prod2/" .. folder .. "/" .. pipeline .. "/" .. build
-  elseif mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)") then
-    eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
-    tag = "jenkins/" .. eod .. "/" .. folder .. "/" .. pipeline .. "/" .. build
+  --elseif mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)") then
+  --  folder, pipeline, build = mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)")
+  --  tag = "jenkins-prod2/" .. folder .. "/" .. pipeline .. "/" .. build
+  elseif mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/.*")  then
+    print("link-o-matic: jenkins.prod2")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https://jenkins.prod2.shared.aws.teladoc.com/","jenkins:")
+  --elseif mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)") then
+  --  eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
+  --  tag = "jenkins/" .. eod .. "/" .. folder .. "/" .. pipeline .. "/" .. build
+  elseif mypasteboard:match("https://jenkins.teladoc.io/job/.*")  then
+    print("link-o-matic: jenkins.teladoc")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https://jenkins.teladoc.io/","jenkins:")
+  elseif mypasteboard:match("https://ci.intouchhealth.io/azure[-]infrastructure[-]primary[-]01/.*/level3[-]applications/")  then
+    print("link-o-matic: cb-jenkins level3 nonsense")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https.*level3[-]applications/","jenkins:")
+  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job/") then
+    print("link-o-matic: cb-jenkins general")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https://ci.intouchhealth.io/","jenkins:")
+    -- controller, pipeline, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/(.*)")
+    -- tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
+    hs.alert("Matched a cluster.up in the link-o-matic. oops", 4)
+    print("Matched a cluster.up in the link-o-matic. oops")
     controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
     tag = "jenkins/" .. controller .. "/" .. folder .. "/" .. pipeline .. "/" .. branch .. "/" .. build
-  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job") then
-    controller, pipeline, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/(.*)")
-    tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
     tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
     -- also works: tag, _ = mypasteboard:gsub(";sort.*",""):gsub(".*=","")
   elseif mypasteboard:match("https?://") then
+    print("link-o-matic: URL catch-all")
     tag = string.match(mypasteboard, ".*/(.*)")
   end
   if tag == nil then
