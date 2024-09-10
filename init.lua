@@ -25,6 +25,7 @@ change log:
   2024-07-19 - clipboard history back to 100/1k
   2024-08-06 - variablize clipboardtool_hist_size, clipboardtool_max_entry_size
   2024-08-28 - add shift-hyper-W - show window findenheimer; add pop-lips-to-findenheimer but too many false positives. disabled.
+  2024-09-10 - drop clipboardtool_hist_size fromn 100 to 25
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -34,7 +35,7 @@ ctrl_cmd       = {"cmd","ctrl"}
 my_email       = "hammerspoonie@jasons.us"
 my_work_email  = "jason.schechner@teladochealth.com"
 -- work_logo = hs.image.imageFromPath(hs.configdir .. "/files/work_logo_2x.png")
-clipboardtool_hist_size = 100
+clipboardtool_hist_size = 25
 clipboardtool_max_entry_size = 1024
 
 ----------------------------------------------------------------------------------------------

@@ -40,6 +40,7 @@ change log
   2024-08-06 - closePrivsReminder: handle nul focused_window
   2024-08-28 - 1-step closer to auto-connecting azure vpn; remove clipboard manager
   2024-09-05 - Hyper-L: clean up and generalize jenkins matches = drop "/job" and gsub the URL instead of using capture groups
+  2024-09-10 - finally got connectAzure working using Wooshy. It's flaky since the prod VPN sometimes is 4 tabs, sometimes 5. Default here is 4 with 0.2s wait between "tabs" so I can add one live
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -219,8 +220,20 @@ end)
 -- URLs to launch and drop AzureVPN
 
 hs.urlevent.bind("connectAzure",function(eventName, params)
+  -- define variables
   local vpn_to_launch_name = "Azure VPN Client"
   local vpn_to_launch_bundleid = "com.microsoft.AzureVpnMac"
+  -- launch wooshy
+  local wooshy_app = "Wooshy"
+  hs.application.launchOrFocus("Wooshy")
+  wooshyApp=hs.application.find("Wooshy")
+  local window_to_close=hs.window.find("General")
+  if window_to_close then
+    window_to_close:close()
+  else
+    print("Wooshy doesn't appear to be open")
+  end
+  os.execute("sleep 0.5")
   hs.application.launchOrFocus(vpn_to_launch_name)
   while_counter = 0
   local focusedWindow = hs.window.focusedWindow()
@@ -236,6 +249,30 @@ hs.urlevent.bind("connectAzure",function(eventName, params)
   end
   print(while_counter .. " cycles")
   vpnApplication=hs.application.find(vpn_to_launch_bundleid)
+  hs.eventtap.keyStroke({}, "tab", vpnApplication)
+  hs.timer.usleep(300000)
+  -- os.execute("sleep 0.5")
+  hs.eventtap.keyStroke({}, "p", vpnApplication)
+  os.execute("sleep 0.2")
+  -- invoke wooshy
+  hs.eventtap.keyStroke({"cmd","alt","ctrl"},"w")
+  --hs.eventtap.keyStrokes("connect")
+  hs.eventtap.keyStroke({},"c")
+  hs.eventtap.keyStroke({},"o")
+  hs.eventtap.keyStroke({},"n")
+  hs.eventtap.keyStroke({},"n")
+  hs.eventtap.keyStroke({},"e")
+  hs.eventtap.keyStroke({},"c")
+  hs.eventtap.keyStroke({},"t")
+  hs.eventtap.keyStroke({},"tab")
+  os.execute("sleep 0.2")
+  hs.eventtap.keyStroke({},"tab")
+  os.execute("sleep 0.2")
+  hs.eventtap.keyStroke({},"tab")
+  os.execute("sleep 0.2")
+  hs.eventtap.keyStroke({},"tab")
+  os.execute("sleep 0.2")
+  hs.eventtap.keyStroke({},"return")
 --[[ "tab, p, space" worked briefly, then stopped.  Look into using accessibility
 https://www.hammerspoon.org/docs/hs.axuielement.html
 hs.axuielement.applicationElement(vpnApplication)
@@ -248,13 +285,13 @@ hs.inspect(hs.axuielement.applicationElement(vpnApplication):elementAtPosition(a
 3. type "p"
 4. tab-z, enter (will toggle connection)
 
-
---]]
+  - it would be nice if this still worked!
   hs.eventtap.keyStroke({}, "tab", vpnApplication)
   os.execute("sleep 0.5")
   hs.eventtap.keyStroke({}, "p", vpnApplication)
   os.execute("sleep 0.5")
   hs.eventtap.keyStroke({}, "space", vpnApplication)
+--]]
 end)
 
 ----------------------------------------------------------------------------------------------
