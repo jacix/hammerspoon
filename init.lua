@@ -26,6 +26,7 @@ change log:
   2024-08-06 - variablize clipboardtool_hist_size, clipboardtool_max_entry_size
   2024-08-28 - add shift-hyper-W - show window findenheimer; add pop-lips-to-findenheimer but too many false positives. disabled.
   2024-09-10 - drop clipboardtool_hist_size fromn 100 to 25
+  2024-09-12 - add subrole to HyperF
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -35,7 +36,7 @@ ctrl_cmd       = {"cmd","ctrl"}
 my_email       = "hammerspoonie@jasons.us"
 my_work_email  = "jason.schechner@teladochealth.com"
 -- work_logo = hs.image.imageFromPath(hs.configdir .. "/files/work_logo_2x.png")
-clipboardtool_hist_size = 25
+clipboardtool_hist_size = 50
 clipboardtool_max_entry_size = 1024
 
 ----------------------------------------------------------------------------------------------
@@ -117,7 +118,8 @@ hotkey_HyperF = hs.hotkey.bind(hyper, "F", "front-most app+window; focused windo
   focused_window = hs.window.focusedWindow()
   relative_mouse = hs.mouse.getRelativePosition()
   absolute_mouse = hs.mouse.absolutePosition()
-  hs.alert.show("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n- frontmost_win pid, id, role: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 6)
+  print("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n- frontmost_win pid, id, role, subrole: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "," .. frontmost_window:subrole() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"])
+  hs.alert.show("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n- frontmost_win pid, id, role, subrole: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "," .. frontmost_window:subrole() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 8)
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts
