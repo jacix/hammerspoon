@@ -117,7 +117,7 @@ hotkey_HyperF = hs.hotkey.bind(hyper, "F", "front-most app+window; focused windo
   focused_window = hs.window.focusedWindow()
   relative_mouse = hs.mouse.getRelativePosition()
   absolute_mouse = hs.mouse.absolutePosition()
-  hs.alert.show("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n-frontmost_win pid, id, role: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 6)
+  hs.alert.show("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n- frontmost_win pid, id, role: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 6)
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts
