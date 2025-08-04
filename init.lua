@@ -27,6 +27,7 @@ change log:
   2024-08-28 - add shift-hyper-W - show window findenheimer; add pop-lips-to-findenheimer but too many false positives. disabled.
   2024-09-10 - drop clipboardtool_hist_size fromn 100 to 25
   2024-09-12 - add subrole to HyperF
+  2025-08-04 - add Traversal laptop ("Jason’s MacBook Pro") so it loads worktools
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -55,7 +56,7 @@ Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hype
 ----------------------------------------------------------------------------------------------
 -- determine my hostname, so I know what to load
 myhostname = hs.host.localizedName()
-if myhostname == "REM-JasonSchechner" or myhostname == "Jason Schechner Y3WLD0C6NF" then
+if myhostname == "Jason’s MacBook Pro" then
   local workstuff = require('worktools')
 elseif myhostname == "vader" or myhostname == "m3po" then
   local homestuff = require('hometools')
