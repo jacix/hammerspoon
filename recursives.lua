@@ -6,6 +6,7 @@ change log
                created password retrieval using Keychain Spoon as nested menu under 'p'
                created full date/time options: date/time/both and format: long/short
   2024-03-06 - save object when binding a hotkey  
+  2025-08-06 - change hotkey to control-space to avoid clashing with ChatGPT's default
 --]]
 
 hs.loadSpoon("RecursiveBinder")
@@ -44,7 +45,7 @@ jasonKeyMap = {
   }
 }
 
-hotkey_OptionSpace = hs.hotkey.bind({'option'}, 'space', "Datenheimer", spoon.RecursiveBinder.recursiveBind(jasonKeyMap))
+hotkey_OptionSpace = hs.hotkey.bind({'control'}, 'space', "Datenheimer", spoon.RecursiveBinder.recursiveBind(jasonKeyMap))
 
 --[[ basement - storage and references (and probably a bunch of dust)
 defaultKeyMap = {
