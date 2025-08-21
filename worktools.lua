@@ -41,6 +41,7 @@ change log
   2024-08-28 - 1-step closer to auto-connecting azure vpn; remove clipboard manager
   2024-09-05 - Hyper-L: clean up and generalize jenkins matches = drop "/job" and gsub the URL instead of using capture groups
   2024-09-10 - finally got connectAzure working using Wooshy. It's flaky since the prod VPN sometimes is 4 tabs, sometimes 5. Default here is 4 with 0.2s wait between "tabs" so I can add one live
+  2025-08-21 - disabled URLDispatcher since it's not necesary at Traversal
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -442,6 +443,7 @@ end)
 
 ----------------------------------------------------------------------------------------------
 -- URL Dispatcher to send applications to Firefox when necessary
+--[[ disable 2025-08-21
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
@@ -453,7 +455,7 @@ Install:andUse("URLDispatcher", {
   -- Enable debug logging if you get unexpected behavior
   -- loglevel = 'debug'
 })
-
+]]--
 -- this works but no help in hyper-h
 Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 

@@ -56,7 +56,7 @@ Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hype
 ----------------------------------------------------------------------------------------------
 -- determine my hostname, so I know what to load
 myhostname = hs.host.localizedName()
-if myhostname == "Jason’s MacBook Pro" then
+if myhostname == "Jason’s MacBook Pro" or myhostname == "JSON-M4" then
   local workstuff = require('worktools')
 elseif myhostname == "vader" or myhostname == "m3po" then
   local homestuff = require('hometools')
