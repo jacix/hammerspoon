@@ -42,12 +42,12 @@ change log
   2024-09-05 - Hyper-L: clean up and generalize jenkins matches = drop "/job" and gsub the URL instead of using capture groups
   2024-09-10 - finally got connectAzure working using Wooshy. It's flaky since the prod VPN sometimes is 4 tabs, sometimes 5. Default here is 4 with 0.2s wait between "tabs" so I can add one live
   2025-08-21 - disabled URLDispatcher since it's not necesary at Traversal
-  2025-09-03 - remove tdh stuff (this file was copied as tdh.worktools.lua)
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
 primaryScreen=hs.screen.primaryScreen()
-my_work_email  = "jason@traversal.com"
+-- privs_close_x = { x = 1374.40234375, y = 45.69921875 }
+privs_close_box = { x = 1386.40234375, y = 61.69921875 }
 
 -- please allow me to introduce myself
 hs.alert.show("Loading work tools")
@@ -66,13 +66,31 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   elseif mypasteboard:match("https://github.com") then
     print("link-o-matic: github")
     tag=mypasteboard:gsub("https://github.com/","github/")
-  --[[
+  --elseif mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)") then
+  --  folder, pipeline, build = mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/(.*)/job/(.*)/(.*)")
+  --  tag = "jenkins-prod2/" .. folder .. "/" .. pipeline .. "/" .. build
+  elseif mypasteboard:match("https://jenkins.prod2.shared.aws.teladoc.com/job/.*")  then
+    print("link-o-matic: jenkins.prod2")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https://jenkins.prod2.shared.aws.teladoc.com/","jenkins:")
+  --elseif mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)") then
+  --  eod, folder, pipeline, build = mypasteboard:match("https://jenkins.teladoc.io/job/(.*)/job/(.*)/job/(.*)/(.*)")
+  --  tag = "jenkins/" .. eod .. "/" .. folder .. "/" .. pipeline .. "/" .. build
+  elseif mypasteboard:match("https://jenkins.teladoc.io/job/.*")  then
+    print("link-o-matic: jenkins.teladoc")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https://jenkins.teladoc.io/","jenkins:")
+  elseif mypasteboard:match("https://ci.intouchhealth.io/azure[-]infrastructure[-]primary[-]01/.*/level3[-]applications/")  then
+    print("link-o-matic: cb-jenkins level3 nonsense")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https.*level3[-]applications/","jenkins:")
+  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/job/") then
+    print("link-o-matic: cb-jenkins general")
+    tag = mypasteboard:gsub("/job/","/"):gsub("https://ci.intouchhealth.io/","jenkins:")
+    -- controller, pipeline, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/(.*)")
+    -- tag = "jenkins/" .. controller .. "/" .. pipeline .. "/" .. build
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
     hs.alert("Matched a cluster.up in the link-o-matic. oops", 4)
     print("Matched a cluster.up in the link-o-matic. oops")
     controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
     tag = "jenkins/" .. controller .. "/" .. folder .. "/" .. pipeline .. "/" .. branch .. "/" .. build
-  ]]--
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
     tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
@@ -101,11 +119,28 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     -- hs.timer.usleep(500000)
     hs.eventtap.keyStroke({}, "return")
     focused_window:focus()
+  elseif (frontmost_app_title == "Microsoft Outlook") and (focused_window_title:match("jason.schechner@teladochealth.com")) then
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+    hs.eventtap.keyStrokes(mypasteboard)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "return", focused_app)
   elseif (frontmost_app_title == "Microsoft Excel") then
     hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
     hs.eventtap.keyStrokes(mypasteboard)
     hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "return", focused_app)
+  elseif ( focused_window_title:match("CONFLUENCE DATA CENTER") or focused_window_title:match("JIRA DATA CENTER")) then 
+    hs.eventtap.keyStrokes("[" .. tag .. "|" .. mypasteboard .. "]")
+  elseif ( focused_window_title:match("DevOps Service Desk") ) then
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+    hs.eventtap.keyStrokes(mypasteboard, focused_app)
     hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStrokes(tag)

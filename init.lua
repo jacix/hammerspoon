@@ -28,6 +28,7 @@ change log:
   2024-09-10 - drop clipboardtool_hist_size fromn 100 to 25
   2024-09-12 - add subrole to HyperF
   2025-08-04 - add Traversal laptop ("Jason’s MacBook Pro") so it loads worktools
+  2025-09-03 - remove more tdh and move my_work_email to worktools
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -35,7 +36,6 @@ hyper          = {"cmd","alt","ctrl"}
 shift_hyper    = {"cmd","alt","ctrl","shift"}
 ctrl_cmd       = {"cmd","ctrl"}
 my_email       = "hammerspoonie@jasons.us"
-my_work_email  = "jason.schechner@teladochealth.com"
 -- work_logo = hs.image.imageFromPath(hs.configdir .. "/files/work_logo_2x.png")
 clipboardtool_hist_size = 50
 clipboardtool_max_entry_size = 1024
