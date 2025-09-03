@@ -42,6 +42,7 @@ change log
   2024-09-05 - Hyper-L: clean up and generalize jenkins matches = drop "/job" and gsub the URL instead of using capture groups
   2024-09-10 - finally got connectAzure working using Wooshy. It's flaky since the prod VPN sometimes is 4 tabs, sometimes 5. Default here is 4 with 0.2s wait between "tabs" so I can add one live
   2025-08-21 - disabled URLDispatcher since it's not necesary at Traversal
+  2025-09-03 - update my email address
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -119,7 +120,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     -- hs.timer.usleep(500000)
     hs.eventtap.keyStroke({}, "return")
     focused_window:focus()
-  elseif (frontmost_app_title == "Microsoft Outlook") and (focused_window_title:match("jason.schechner@teladoc.com")) then
+  elseif (frontmost_app_title == "Microsoft Outlook") and (focused_window_title:match("jason@traversal.com")) then
     hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
     hs.eventtap.keyStrokes(mypasteboard)
     hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
@@ -605,3 +606,4 @@ hs.urlevent.bind("connectFortinetold",function(eventName, params)
   hs.mouse.absolutePosition(mousePosition)
 end)
 ]]--
+
