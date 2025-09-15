@@ -43,6 +43,7 @@ change log
   2024-09-10 - finally got connectAzure working using Wooshy. It's flaky since the prod VPN sometimes is 4 tabs, sometimes 5. Default here is 4 with 0.2s wait between "tabs" so I can add one live
   2025-08-21 - disabled URLDispatcher since it's not necesary at Traversal
   2025-09-03 - remove tdh stuff (this file was copied as tdh.worktools.lua)
+  2025-09-15 - add hotkey_hyperP for pepsi
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -458,6 +459,23 @@ hotkey_hyperD = hs.hotkey.bind(hyper, "D", "compliance docs", function()
   hs.eventtap.keyStrokes(doc_name .. "\n")
 end)
 
+-- added 2025-09-15
+hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
+  focused_window = hs.window.focusedWindow()
+  frontmost_app = hs.application.frontmostApplication()
+  frontmost_app_title = frontmost_app:title()
+  focused_window_title = focused_window:title()
+  if frontmost_app_title:match("Safari") then
+      if focused_window_title:match("Traversal") then
+         hs.eventtap.keyStroke({}, "tab", frontmost_app)
+         hs.eventtap.keyStrokes("Pepsi")
+      else
+         print("focused window not Traversal, it's " .. frontmost_window_title)
+      end
+   else
+      print("frontmost app is not Safari, it's " .. frontmost_app_title)
+   end
+end)
 
 ----------------------------------------------------------------------------------------------
 --[[ stuff to play with later
