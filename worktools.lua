@@ -44,6 +44,7 @@ change log
   2025-08-21 - disabled URLDispatcher since it's not necesary at Traversal
   2025-09-03 - remove tdh stuff (this file was copied as tdh.worktools.lua)
   2025-09-15 - add hotkey_hyperP for pepsi
+  2025-09-19 - hyperP looks for "Enter your organization" and now hits enter
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -466,9 +467,10 @@ hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
   frontmost_app_title = frontmost_app:title()
   focused_window_title = focused_window:title()
   if frontmost_app_title:match("Safari") then
-      if focused_window_title:match("Traversal") then
+      if focused_window_title:match("Enter your organization") then
          hs.eventtap.keyStroke({}, "tab", frontmost_app)
-         hs.eventtap.keyStrokes("Pepsi")
+         hs.eventtap.keyStrokes("Pepsi", frontmost_app)
+         hs.eventtap.keyStroke({}, "return", frontmost_app)
       else
          print("focused window not Traversal, it's " .. frontmost_window_title)
       end
