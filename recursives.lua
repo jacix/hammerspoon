@@ -7,6 +7,7 @@ change log
                created full date/time options: date/time/both and format: long/short
   2024-03-06 - save object when binding a hotkey  
   2025-08-06 - change hotkey to control-space to avoid clashing with ChatGPT's default
+  2025-10-16 - add 'dbc' to date-enheimer for central time long, remove password leftovers from past job
 --]]
 
 hs.loadSpoon("RecursiveBinder")
@@ -27,8 +28,9 @@ singleKey = spoon.RecursiveBinder.singleKey
 jasonKeyMap = {
   [spoon.RecursiveBinder.singleKey('d', 'datetime+')] = {
     [spoon.RecursiveBinder.singleKey('b', 'both+')] = {
-      [spoon.RecursiveBinder.singleKey('l', 'yyyy-mm-dd.hh:ss')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d.%H%M")) end,
-      [spoon.RecursiveBinder.singleKey('s', 'yyyymmdd.hhss')] = function() hs.eventtap.keyStrokes(os.date("%Y%m%d.%H%M")) end,
+      [spoon.RecursiveBinder.singleKey('l', 'long current')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d.%H%M")) end,
+      [spoon.RecursiveBinder.singleKey('s', 'short current')] = function() hs.eventtap.keyStrokes(os.date("%Y%m%d.%H%M")) end,
+      [spoon.RecursiveBinder.singleKey('c', 'long CT')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d.%H%M",os.time()-3600) .. " CT") end,
       },
     [spoon.RecursiveBinder.singleKey('d', 'dates+')] = {
       [spoon.RecursiveBinder.singleKey('l', 'yyyy-mm-dd')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d")) end,
@@ -38,10 +40,6 @@ jasonKeyMap = {
       [spoon.RecursiveBinder.singleKey('l', 'hh:mm')] = function() hs.eventtap.keyStrokes(os.date("%H:%M")) end,
       [spoon.RecursiveBinder.singleKey('s', 'hhmm')] = function() hs.eventtap.keyStrokes(os.date("%H%M")) end
       }
-  },
-  [spoon.RecursiveBinder.singleKey('p', 'passwords+')] = {
-    [spoon.RecursiveBinder.singleKey('s', 'ssi')] = function() hs.eventtap.keyStrokes(spoon.Keychain:getItem{account="jason.schechner",label="workvpnlogin",service="onelogin"}.password) end,
-    [spoon.RecursiveBinder.singleKey('p', 'freeipaprod')] = function() hs.eventtap.keyStrokes(spoon.Keychain:getItem{account="jschechner",label="freeipa",service="ssh",comment="freeipaprod"}.password) end
   }
 }
 
