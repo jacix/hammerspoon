@@ -45,6 +45,7 @@ change log
   2025-09-03 - remove tdh stuff (this file was copied as tdh.worktools.lua)
   2025-09-15 - add hotkey_hyperP for pepsi
   2025-09-19 - hyperP looks for "Enter your organization" and now hits enter
+  2025-10-23 - re-enable URLDispatcher for app.traversal.com; delete tdh stuff, retire pepsi-o-matic
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -117,192 +118,9 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   end
 end)
 
--- Check if on VPN when HS starts, and if so, disable sleep
--- courtesy of https://medium.com/@robhowlett/hammerspoon-the-best-mac-software-youve-never-heard-of-40c2df6db0f8
-function pingResult(object, message, seqnum, error)
-  if message == "didFinish" then
-    hs.caffeinate.set("displayIdle",true)
-    setCaffeineDisplay(hs.caffeinate.get("displayIdle"))
-    hs.alert.show("VPN detected. It's not too late, to buzz it good.")
-    hs.timer.usleep(200000)
-    avg = tonumber(string.match(object:summary(), '/(%d+.%d+)/'))
-    if avg == 0.0 then
-      hs.alert.show("No network")
-    elseif avg < 200.0 then
-      hs.alert.show("Network good (" .. avg .. "ms)")
-    elseif avg < 500.0 then
-      hs.alert.show("Network meh(" .. avg .. "ms)")
-    else
-      hs.alert.show("Network bad(" .. avg .. "ms)")
-    end
-  end
-end
-hs.network.ping.ping("jump1.aws2.teladoc.com", 3, 0.2, 1.0, "any", pingResult)
-
 -- print my email address
 hotkey_hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
   hs.eventtap.keyStrokes(my_work_email)
-end)
-
-----------------------------------------------------------------------------------------------
--- URLs to launch and drop Fortinet
-hs.urlevent.bind("connectFortinet",function(eventName, params)
-  hs.application.launchOrFocus("Forticlient")
-  while_counter = 0
-  local focusedWindow = hs.window.focusedWindow()
-  while (not focusedWindow or focusedWindow:title() ~= "FortiClient -- Zero Trust Fabric Agent")
-  do
-    while_counter=while_counter+1
-    focusedWindow = hs.window.focusedWindow()
-    hs.timer.usleep(100000)
-    if while_counter >= 100 then
-      print("Breaking out of watch loop")
-      break
-    end
-  end
-  print(while_counter .. " cycles")   
-  fortiApplication=hs.application.find("com.fortinet.FortiClient")
-  -- hs.timer.usleep(1000000)
-  os.execute("sleep 0.5")
-  hs.eventtap.keyStroke({}, "tab", fortiApplication)
-  --hs.timer.usleep(1000000)
-  os.execute("sleep 0.5")
-  hs.eventtap.keyStrokes(".t", fortiApplication)
-  --hs.timer.usleep(1000000)
-  os.execute("sleep 0.5")
-  hs.eventtap.keyStroke({}, "tab", fortiApplication)
-  hs.eventtap.keyStroke({}, "space", fortiApplication)
-end)
-
-hs.urlevent.bind("dropFortinet",function(eventName, params)
-  hs.application.launchOrFocus("Forticlient")
-  fortiApplication=hs.application.find("com.fortinet.FortiClient")
-  hs.timer.usleep(1000000)
-  hs.eventtap.keyStroke({}, "tab", fortiApplication)
-  hs.eventtap.keyStroke({}, "space", fortiApplication)
-  hs.timer.usleep(1000000)
-  hs.eventtap.keyStroke({"cmd"}, "q", fortiApplication)
-end)
-
-----------------------------------------------------------------------------------------------
--- URLs to launch and drop AzureVPN
-
-hs.urlevent.bind("connectAzure",function(eventName, params)
-  -- define variables
-  local vpn_to_launch_name = "Azure VPN Client"
-  local vpn_to_launch_bundleid = "com.microsoft.AzureVpnMac"
-  -- launch wooshy
-  local wooshy_app = "Wooshy"
-  hs.application.launchOrFocus("Wooshy")
-  wooshyApp=hs.application.find("Wooshy")
-  local window_to_close=hs.window.find("General")
-  if window_to_close then
-    window_to_close:close()
-  else
-    print("Wooshy doesn't appear to be open")
-  end
-  os.execute("sleep 0.5")
-  hs.application.launchOrFocus(vpn_to_launch_name)
-  while_counter = 0
-  local focusedWindow = hs.window.focusedWindow()
-  while (not focusedWindow or focusedWindow:title() ~= vpn_to_launch_name)
-  do
-    while_counter=while_counter+1
-    focusedWindow = hs.window.focusedWindow()
-    hs.timer.usleep(100000)
-    if while_counter >= 100 then
-      print("Breaking out of watch loop for " .. vpn_to_launch_name)
-          break
-     end
-  end
-  print(while_counter .. " cycles")
-  vpnApplication=hs.application.find(vpn_to_launch_bundleid)
-  hs.eventtap.keyStroke({}, "tab", vpnApplication)
-  hs.timer.usleep(300000)
-  -- os.execute("sleep 0.5")
-  hs.eventtap.keyStroke({}, "p", vpnApplication)
-  os.execute("sleep 0.2")
-  -- invoke wooshy
-  hs.eventtap.keyStroke({"cmd","alt","ctrl"},"w")
-  --hs.eventtap.keyStrokes("connect")
-  hs.eventtap.keyStroke({},"c")
-  hs.eventtap.keyStroke({},"o")
-  hs.eventtap.keyStroke({},"n")
-  hs.eventtap.keyStroke({},"n")
-  hs.eventtap.keyStroke({},"e")
-  hs.eventtap.keyStroke({},"c")
-  hs.eventtap.keyStroke({},"t")
-  hs.eventtap.keyStroke({},"tab")
-  os.execute("sleep 0.2")
-  hs.eventtap.keyStroke({},"tab")
-  os.execute("sleep 0.2")
-  hs.eventtap.keyStroke({},"tab")
-  os.execute("sleep 0.2")
-  hs.eventtap.keyStroke({},"tab")
-  os.execute("sleep 0.2")
-  hs.eventtap.keyStroke({},"return")
---[[ "tab, p, space" worked briefly, then stopped.  Look into using accessibility
-https://www.hammerspoon.org/docs/hs.axuielement.html
-hs.axuielement.applicationElement(vpnApplication)
-hs.inspect(hs.axuielement.applicationElement(vpnApplication):allAttributeValues())
-# works if the mouse is over the "connect" button. Not much help since I can just click it.
-hs.inspect(hs.axuielement.applicationElement(vpnApplication):elementAtPosition(absolute_mouse))
-# this does work, but is clumsy
-1. enable accessibility full keyboard access (shortcut or ctrl-f1 (or ctrl-f7?)
-2. click home
-3. type "p"
-4. tab-z, enter (will toggle connection)
-
-  - it would be nice if this still worked!
-  hs.eventtap.keyStroke({}, "tab", vpnApplication)
-  os.execute("sleep 0.5")
-  hs.eventtap.keyStroke({}, "p", vpnApplication)
-  os.execute("sleep 0.5")
-  hs.eventtap.keyStroke({}, "space", vpnApplication)
---]]
-end)
-
-----------------------------------------------------------------------------------------------
---[[ the old way, which doesn't work because the VPN options move around.
-hs.urlevent.bind("connectAzure",function(eventName, params)
-  -- variables
-  azureProdCommercialClick= { x=760; y=314 }
-  primaryScreen=hs.screen.primaryScreen()
-  -- activities
-  mousePosition=hs.mouse.absolutePosition()
-  hs.application.launchOrFocus("Azure VPN Client")
-  hs.timer.usleep(1000000)
-  azureVPNWindow=hs.window.find("Azure VPN Client")
-  azureVPNWindow:centerOnScreen(primaryScreen)
-  hs.timer.usleep(1000000)
-  hs.eventtap.leftClick(azureProdCommercialClick)
-  hs.timer.usleep(1000000)
-  hs.eventtap.leftClick(azureProdCommercialClick)
-  hs.timer.usleep(500000)
-  hs.mouse.absolutePosition(mousePosition)
-end)
---]]
-hs.urlevent.bind("dropAzure",function(eventName, params)
-  -- variables
-  azureProdCommercialClick= { x=760; y=314 }
-  primaryScreen=hs.screen.primaryScreen()
-  -- activities
-  mousePosition=hs.mouse.absolutePosition()
-  hs.application.launchOrFocus("Azure VPN Client")
-  hs.timer.usleep(500000)
-  azureVPNWindow=hs.window.find("Azure VPN Client")
-  hs.timer.usleep(500000)
-  azureVPNWindow:centerOnScreen(primaryScreen)
-  hs.timer.usleep(500000)
-  frontapp=hs.application.frontmostApplication()
-  if frontapp:name() == "Azure VPN Client" then
-    hs.eventtap.leftClick(azureProdCommercialClick)
-    hs.timer.usleep(500000)
-    hs.eventtap.keyStroke({"cmd"}, "q")
-  else
-    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
-  end
-  hs.mouse.absolutePosition(mousePosition)
 end)
 
 ----------------------------------------------------------------------------------------------
@@ -318,76 +136,6 @@ hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
   else
     vpnMenuStatus:removeFromMenuBar()
   end
-end)
-
-----------------------------------------------------------------------------------------------
--- Clear Outlook reminders. It's a function so can be called by hotkey or URL
-function clearOutlookReminders()
-  reminders_window=hs.window.find("Reminder")
-  if reminders_window then
-    reminders_window:close()
-  else
-    hs.alert.show("What reminders? (hint: I can't find a reminders window.")
-  end
-end
-
-hs.urlevent.bind("clearOutlookReminders",function(eventName,params)
-  clearOutlookReminders()
-end)
-
-hotkey_hyperO = hs.hotkey.bind(hyper, "O", "close outlook reminders", function()
-  clearOutlookReminders()
-end)
-
-----------------------------------------------------------------------------------------------
--- run privileges and enable
-function togglePrivs()
-  privsApplication=hs.application.launchOrFocus("Privileges")
-  privsApplication=hs.application.find("com.sap.privileges")
-  hs.timer.usleep(500000)
-  hs.eventtap.keyStroke({}, "tab", privsApplication)
-  hs.eventtap.keyStroke({}, "space", privsApplication)
-end
-
-hs.urlevent.bind("togglePrivs",function(eventName,params)
-  togglePrivs()
-end)
-
-----------------------------------------------------------------------------------------------
--- clear the annoying permissions changed notice box. Need to find a way to see if it's present.
-function closePrivsReminder()
-  -- first find the built-in screen's resolution so I know where the X is
-  --primary_screen=hs.screen.primaryScreen()
-  primaryScreenHeight=primaryScreen:currentMode()["h"]
-  if primaryScreenHeight == 1080 then
-    privs_close_x = { x = 1374.40234375, y = 45.69921875 }
-    print("closing on primary screen: " .. hs.inspect(primaryScreen:currentMode()))
-  elseif primary_screen_height == 1117 then
-    privs_close_x = { x = 1374.40234375, y = 57.3984375 }
-    print("closing on primary screen: " .. hs.inspect(primaryScreen:currentMode()))
-  else
-    print("primaryScreenHeight unknown: " .. hs.inspect(primaryScreen:currentMode()))
-    return
-  end
-  mousePosition=hs.mouse.absolutePosition()
-  focused_window = hs.window.focusedWindow()
-  -- hs.mouse.absolutePosition(privs_close_box)
-  -- hs.mouse.absolutePosition(privs_close_x)
-  hs.timer.usleep(300000)
-  hs.mouse.absolutePosition(privs_close_x)
-  hs.timer.usleep(100000)
-  hs.eventtap.leftClick(privs_close_x)
-  hs.timer.usleep(100000)
-  hs.mouse.absolutePosition(mousePosition)
-  if focused_window then
-    focused_window:focus()
-  else 
-    print("Privs closer - no focused window. Oops")
-  end
-end
-
-hs.urlevent.bind("closePrivsReminder",function(eventName,params)
-  closePrivsReminder()
 end)
 
 ----------------------------------------------------------------------------------------------
@@ -410,11 +158,10 @@ end)
 
 ----------------------------------------------------------------------------------------------
 -- URL Dispatcher to send applications to Firefox when necessary
---[[ disable 2025-08-21
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
-      { "ci.intouchhealth.io", "org.mozilla.firefox" }
+      { "app.traversal.com", "org.mozilla.firefox" }
     },
     default_handler = "com.apple.Safari"
   },
@@ -422,7 +169,6 @@ Install:andUse("URLDispatcher", {
   -- Enable debug logging if you get unexpected behavior
   -- loglevel = 'debug'
 })
-]]--
 -- this works but no help in hyper-h
 Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 
@@ -450,52 +196,9 @@ function movemouse(x1,y1,x2,y2,sleep)
   hs.mouse.absolutePosition({x = math.floor(x2), y = math.floor(y2)})
 end
 
--- rename compliance docs based on what's in the pastebuffer
-hotkey_hyperD = hs.hotkey.bind(hyper, "D", "compliance docs", function()
-  doc_name = hs.pasteboard.getContents():gsub("\n","_"):gsub("/$","") .. "_"
-  hs.eventtap.leftClick(hs.mouse.absolutePosition())
-  hs.timer.usleep(500000)
-  hs.eventtap.keyStroke({"alt"}, "left")
-  hs.timer.usleep(500000)
-  hs.eventtap.keyStrokes(doc_name .. "\n")
-end)
-
--- added 2025-09-15
-hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
-  focused_window = hs.window.focusedWindow()
-  frontmost_app = hs.application.frontmostApplication()
-  frontmost_app_title = frontmost_app:title()
-  focused_window_title = focused_window:title()
-  if frontmost_app_title:match("Safari") then
-      if focused_window_title:match("Enter your organization") then
-         hs.eventtap.keyStroke({}, "tab", frontmost_app)
-         hs.eventtap.keyStrokes("Pepsi", frontmost_app)
-         hs.eventtap.keyStroke({}, "return", frontmost_app)
-      else
-         print("focused window not Traversal, it's " .. frontmost_window_title)
-      end
-   else
-      print("frontmost app is not Safari, it's " .. frontmost_app_title)
-   end
-end)
-
 ----------------------------------------------------------------------------------------------
 --[[ stuff to play with later
 hs.tabs.enableForApp("Teams") - https://www.hammerspoon.org/docs/hs.tabs.html
-]]--
-
-----------------------------------------------------------------------------------------------
---[[ WIP
--- 2024-01-24 : raise Azure VPN window, hang up VPN and close it - being done by workvpn.sh so commented out
-hs.urlevent.bind("dropAzureVPN",function(eventName, params)
-  --azure_vpn_app=hs.application.find("Azure VPN")
-  --azure_vpn_app=hs.application.find("com.microsoft.AzureVpnMac")
-  hs.application.open("com.microsoft.AzureVpnMac")
-  hs.application.launchOrFocus("Azure VPN Client")
-  azurevpnwindow=hs.window.find("Azure VPN")
-  hs.application.launchOrFocusByBundleID("com.microsoft.AzureVpnMac")
-  azurevpnwindow:centerOnScreen()
-end)
 ]]--
 
 ----------------------------------------------------------------------------------------------
@@ -589,5 +292,24 @@ hs.urlevent.bind("connectFortinetold",function(eventName, params)
   hs.timer.usleep(600000)
   hs.mouse.absolutePosition(mousePosition)
 end)
-]]--
 
+-- ## archived 2025-10-23
+-- added 2025-09-15
+hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
+  focused_window = hs.window.focusedWindow()
+  frontmost_app = hs.application.frontmostApplication()
+  frontmost_app_title = frontmost_app:title()
+  focused_window_title = focused_window:title()
+  if frontmost_app_title:match("Safari") then
+      if focused_window_title:match("Enter your organization") then
+         hs.eventtap.keyStroke({}, "tab", frontmost_app)
+         hs.eventtap.keyStrokes("Pepsi", frontmost_app)
+         hs.eventtap.keyStroke({}, "return", frontmost_app)
+      else
+         print("focused window not Traversal, it's " .. frontmost_window_title)
+      end
+   else
+      print("frontmost app is not Safari, it's " .. frontmost_app_title)
+   end
+end)
+]]--
