@@ -46,6 +46,7 @@ change log
   2025-09-15 - add hotkey_hyperP for pepsi
   2025-09-19 - hyperP looks for "Enter your organization" and now hits enter
   2025-10-23 - re-enable URLDispatcher for app.traversal.com; delete tdh stuff, retire pepsi-o-matic
+  2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -161,7 +162,8 @@ end)
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
-      { "app.traversal.com", "org.mozilla.firefox" }
+      { "staging.traversal.com", "com.google.Chrome" },
+      { "app.traversal.com", "com.google.Chrome" }
     },
     default_handler = "com.apple.Safari"
   },
