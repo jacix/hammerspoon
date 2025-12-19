@@ -47,6 +47,7 @@ change log
   2025-09-19 - hyperP looks for "Enter your organization" and now hits enter
   2025-10-23 - re-enable URLDispatcher for app.traversal.com; delete tdh stuff, retire pepsi-o-matic
   2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
+  2025-12-19 - Hyper-L: handle trav prod and staging, also paste into Safari for google sheets. Make it more specific later
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -62,6 +63,9 @@ hs.alert.show("Loading work tools")
 hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- clear variables
   pr, repo, tag = nil
+  -- set variables
+  travprodsession = "https://app.traversal.com/session"
+  travstgsession = "https://staging.traversal.com/session"
   -- craft a tag from the pasteboard, removing the trailing slash if present
   mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")
   if not mypasteboard:match("https?://") then
@@ -70,6 +74,16 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   elseif mypasteboard:match("https://github.com") then
     print("link-o-matic: github")
     tag=mypasteboard:gsub("https://github.com/","github/")
+  elseif mypasteboard:match(travprodsession) then
+    sessionid = mypasteboard:match(travprodsession .. "/([%w%-]*)")
+    tag = "P:" .. sessionid
+    mypasteboard = travprodsession .. "/" .. sessionid
+    print("link-o-matic: trav prod. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
+  elseif mypasteboard:match(travstgdsession) then
+    sessionid = mypasteboard:match(travstgsession .. "/([%w%-]*)")
+    tag = "P:" .. sessionid
+    mypasteboard = travstgsession .. "/" .. sessionid
+    print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
   --[[
   elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
     hs.alert("Matched a cluster.up in the link-o-matic. oops", 4)
@@ -114,6 +128,13 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "return", focused_app)
+  elseif (frontmost_app_title == "Safari") then
+    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+    hs.eventtap.keyStrokes(tag)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStrokes(mypasteboard)
+    hs.eventtap.keyStroke({}, "return")
+    hs.eventtap.keyStroke({}, "return")
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
   end
@@ -158,7 +179,7 @@ hs.urlevent.bind("teamsToggleHand",function(eventName, params)
 end)
 
 ----------------------------------------------------------------------------------------------
--- URL Dispatcher to send applications to Firefox when necessary
+-- URL Dispatcher to send applications to Chrome when necessary
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
