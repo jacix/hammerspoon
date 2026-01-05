@@ -48,6 +48,7 @@ change log
   2025-10-23 - re-enable URLDispatcher for app.traversal.com; delete tdh stuff, retire pepsi-o-matic
   2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
   2025-12-19 - Hyper-L: handle trav prod and staging, also paste into Safari for google sheets. Make it more specific later
+  2026-01-05 - Hyper-L: fix typo in travstgsession elseif
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -79,9 +80,9 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "P:" .. sessionid
     mypasteboard = travprodsession .. "/" .. sessionid
     print("link-o-matic: trav prod. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
-  elseif mypasteboard:match(travstgdsession) then
+  elseif mypasteboard:match(travstgsession) then
     sessionid = mypasteboard:match(travstgsession .. "/([%w%-]*)")
-    tag = "P:" .. sessionid
+    tag = "S:" .. sessionid
     mypasteboard = travstgsession .. "/" .. sessionid
     print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
   --[[
