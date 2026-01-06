@@ -49,6 +49,7 @@ change log
   2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
   2025-12-19 - Hyper-L: handle trav prod and staging, also paste into Safari for google sheets. Make it more specific later
   2026-01-05 - Hyper-L: fix typo in travstgsession elseif
+  2026-01-06 - Hyler-L: handle Slack
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -60,7 +61,6 @@ hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
 -- take a URL from the clipboard and make an application-friendly hyperlink
 -- to do:
--- * Figure out how to click in the text box in the Teams window after creating a link.
 hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- clear variables
   pr, repo, tag = nil
@@ -109,17 +109,12 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   focused_window_title = focused_window:title()
   frontmost_app = hs.application.frontmostApplication()
   frontmost_app_title = frontmost_app:title()
-  if frontmost_app_title:match("Microsoft Teams") then
-    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
-    hs.timer.usleep(50000)
-    hs.eventtap.keyStrokes(tag)
-    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
-    hs.eventtap.keyStroke({"shift"}, "tab", focused_app)
-    -- hs.timer.usleep(50000)
+  if frontmost_app_title:match("Slack") then
+    hs.eventtap.keyStroke({"shift", "cmd"}, "u", focused_app)
+    hs.eventtap.keyStrokes(tag, focused_app)
+    hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStrokes(mypasteboard, focused_app)
-    -- hs.timer.usleep(500000)
-    hs.eventtap.keyStroke({}, "return")
-    focused_window:focus()
+    hs.eventtap.keyStroke({}, "return", focused_app)
   elseif (frontmost_app_title == "Microsoft Excel") then
     hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
     hs.eventtap.keyStrokes(mypasteboard)
