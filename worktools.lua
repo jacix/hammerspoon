@@ -49,12 +49,14 @@ change log
   2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
   2025-12-19 - Hyper-L: handle trav prod and staging, also paste into Safari for google sheets. Make it more specific later
   2026-01-05 - Hyper-L: fix typo in travstgsession elseif
-  2026-01-06 - Hyler-L: handle Slack
+  2026-01-06 - Hyler-L: handle Slack, and Notion; more TDH cleanup; swap MicMute launch method
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
 primaryScreen=hs.screen.primaryScreen()
 my_work_email  = "jason@traversal.com"
+-- how long to hold a shift-alt arrowkey in the hyperL loop
+hyperl_arrow_loop_delay = 120000
 
 -- please allow me to introduce myself
 hs.alert.show("Loading work tools")
@@ -85,13 +87,6 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "S:" .. sessionid
     mypasteboard = travstgsession .. "/" .. sessionid
     print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
-  --[[
-  elseif mypasteboard:match("https://ci.intouchhealth.io/.*/cluster.up/") then
-    hs.alert("Matched a cluster.up in the link-o-matic. oops", 4)
-    print("Matched a cluster.up in the link-o-matic. oops")
-    controller, folder, pipeline, branch, build = mypasteboard:match("https://ci.intouchhealth.io/(.*)/job/(.*)/job/(.*)/job/(.*)/(.*)")
-    tag = "jenkins/" .. controller .. "/" .. folder .. "/" .. pipeline .. "/" .. branch .. "/" .. build
-  ]]--
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
     tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
@@ -131,6 +126,17 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.eventtap.keyStrokes(mypasteboard)
     hs.eventtap.keyStroke({}, "return")
     hs.eventtap.keyStroke({}, "return")
+  elseif (frontmost_app_title == "Notion") then
+    hs.eventtap.keyStrokes(tag)
+    local count = 1
+    print("loop delay = " .. hyperl_arrow_loop_delay)
+    while count <= 11 do
+      hs.eventtap.keyStroke({"alt", "shift"}, "left", hyperl_arrow_loop_delay, focused_app)
+      count = count + 1
+    end
+    -- eventtap.keyStrokes'ing the pasteboard overwrites the tag but cmd-v doesn't. Thanks Notion.
+    hs.eventtap.keyStroke({"cmd"}, "v", hyperl_arrow_loop_delay, focused_app)
+    hs.eventtap.keyStroke({}, "space", hyperl_arrow_loop_delay, focused_app)
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
   end
@@ -139,21 +145,6 @@ end)
 -- print my email address
 hotkey_hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
   hs.eventtap.keyStrokes(my_work_email)
-end)
-
-----------------------------------------------------------------------------------------------
--- Add VPN status to the menu bar
-vpnMenuStatus=hs.menubar.new()
-vpnMenuStatus:setIcon("images/pad-lock-png-free-download-23_20x20.png")
-
-hs.urlevent.bind("vpnMenuItem",function(setVPNMenuItem,params)
-  -- hs.alert("I see params" .. hs.inspect(params))
-  if params["connected"] == "1" then
-    vpnMenuStatus:returnToMenuBar()
-    vpnMenuStatus:setTitle(params["service"])
-  else
-    vpnMenuStatus:removeFromMenuBar()
-  end
 end)
 
 ----------------------------------------------------------------------------------------------
@@ -189,14 +180,14 @@ Install:andUse("URLDispatcher", {
   -- loglevel = 'debug'
 })
 -- this works but no help in hyper-h
-Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
+--Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 
 -- this works, and has help with hyper-h but displays two copies of the menu bar icon
--- hs.loadSpoon("MicMute")
--- hs.spoons.use("MicMute")
--- spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
---   spoon.MicMute:toggleMicMute()
--- end)
+hs.loadSpoon("MicMute")
+hs.spoons.use("MicMute")
+spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
+  spoon.MicMute:toggleMicMute()
+end)
 
 -- copied on 2024-06-19 from https://www.reddit.com/r/hammerspoon/comments/og0tio/move_mouse_linearly
 function movemouse(x1,y1,x2,y2,sleep)
@@ -222,96 +213,6 @@ hs.tabs.enableForApp("Teams") - https://www.hammerspoon.org/docs/hs.tabs.html
 
 ----------------------------------------------------------------------------------------------
 --[[ basement - storage and other references
---## archived 2024-03-26
-hs.urlevent.bind("dropFortinetold",function(eventName, params)
-  -- absolute position on the primary screen
-  fortiDisconnect = { x=975; y=630 }
-  saveMouse=hs.mouse.absolutePosition()
-  hs.application.launchOrFocus("Forticlient")
-  fortinetWindow=hs.window.find("Forticlient")
-  fortinetWindow:centerOnScreen(primaryScreen)
-  hs.timer.usleep(500000)
-  frontapp=hs.application.frontmostApplication()
-  if frontapp:name() == "FortiClient" then
-    hs.eventtap.leftClick(fortiDisconnect)
-    hs.eventtap.keyStroke({"cmd"}, "q")
-  else
-    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
-  end
-  hs.mouse.absolutePosition(saveMouse)
-end)
-
---## archived 2024-03-26
--- move to the fortinet icon, right-click to open menu, left click the disconnect - 2024-01-17
-hs.urlevent.bind("dropFortinetolder",function(eventName, params)
-  fortiIcon = { x=1495; y=11 }
-  fortiClick = { x=1497; y=56 }
-  fortiConsole = { x=1497; y=236 }
-  -- get the original mouse location
-  saveMouse=hs.mouse.absolutePosition()
-  -- left click the fortinet icon, right-click disconnect
-  hs.eventtap.rightClick(fortiIcon)
-  hs.timer.usleep(500000)
-  hs.eventtap.leftClick(fortiClick)
-  -- bring up the console and quit it
-  hs.timer.usleep(500000)
-  hs.eventtap.rightClick(fortiIcon)
-  hs.timer.usleep(500000)
-  hs.eventtap.leftClick(fortiConsole)
-  hs.timer.usleep(500000)
-  frontapp=hs.application.frontmostApplication()
-  hs.timer.usleep(500000)
-  if frontapp:name() == "FortiClient" then
-    hs.eventtap.keyStroke({"cmd"}, "q")
-  else
-    hs.alert("Not killing " .. frontapp:name() .. " - you're welcome")
-  end
-  -- move the mouse back
-  hs.mouse.absolutePosition(saveMouse)
-end)
-
---## archived 2024-03-26
-hs.urlevent.bind("connectFortinetold",function(eventName, params)
-  -- variables
-  fortiEndpointMenu = { x=987; y=537 }
-  fortiTierpoint = { x=957 ; y=600 }
-  -- activities
-  mousePosition=hs.mouse.absolutePosition()
-  hs.application.launchOrFocus("Forticlient")
-  while_counter = 0
-  local focusedWindow = hs.window.focusedWindow()
-  while (not focusedWindow or focusedWindow:title() ~= "FortiClient -- Zero Trust Fabric Agent")
-  do
-     while_counter=while_counter+1
-     focusedWindow = hs.window.focusedWindow()
---[[ checking to see how long I have to wait for forticlient to come into focus; only for debugging
-     if focusedWindow then
-          print(while_counter .. " : hs.window.focusedWindow():title() = " .. hs.window.focusedWindow():title())
-     else
-          print(while_counter .. ": No focus.")
-     end
-     print(while_counter .. " : hs.application.frontmostApplication():title()" .. hs.application.frontmostApplication():title() .. "\n")
---]#]
-     hs.timer.usleep(100000)
-     if while_counter >= 100 then
-          print("Breaking out of watch loop")
-          break
-     end
-  end
-  print(while_counter .. " cycles")
-  hs.timer.usleep(1000000)
-  hs.eventtap.leftClick(fortiEndpointMenu)
-  hs.timer.usleep(500000)
-  -- hs.eventtap.leftClick(fortiTierpoint)
-  hs.eventtap.keyStrokes(".t")
-  hs.eventtap.keyStroke({}, "return")
-  hs.timer.usleep(600000)
-  hs.eventtap.leftClick(fortiTierpoint)
-  -- send the mouse back to where it was
-  hs.timer.usleep(600000)
-  hs.mouse.absolutePosition(mousePosition)
-end)
-
 -- ## archived 2025-10-23
 -- added 2025-09-15
 hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
