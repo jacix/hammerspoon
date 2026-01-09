@@ -8,6 +8,7 @@ change log
   2024-03-06 - save object when binding a hotkey  
   2025-08-06 - change hotkey to control-space to avoid clashing with ChatGPT's default
   2025-10-16 - add 'dbc' to date-enheimer for central time long, remove password leftovers from past job
+  2026-01-08 - add 'dbg' to date-enheimer for googlesheet-friendly date
 --]]
 
 hs.loadSpoon("RecursiveBinder")
@@ -30,7 +31,7 @@ jasonKeyMap = {
     [spoon.RecursiveBinder.singleKey('b', 'both+')] = {
       [spoon.RecursiveBinder.singleKey('l', 'long current')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d.%H%M")) end,
       [spoon.RecursiveBinder.singleKey('s', 'short current')] = function() hs.eventtap.keyStrokes(os.date("%Y%m%d.%H%M")) end,
-      [spoon.RecursiveBinder.singleKey('c', 'long CT')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d.%H%M",os.time()-3600) .. " CT") end,
+      [spoon.RecursiveBinder.singleKey('g', 'long google sheets')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d %H:%M")) end,
       },
     [spoon.RecursiveBinder.singleKey('d', 'dates+')] = {
       [spoon.RecursiveBinder.singleKey('l', 'yyyy-mm-dd')] = function() hs.eventtap.keyStrokes(os.date("%Y-%m-%d")) end,

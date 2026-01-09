@@ -79,12 +79,12 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag=mypasteboard:gsub("https://github.com/","github/")
   elseif mypasteboard:match(travprodsession) then
     sessionid = mypasteboard:match(travprodsession .. "/([%w%-]*)")
-    tag = "P:" .. sessionid
+    tag = "Prd:" .. sessionid
     mypasteboard = travprodsession .. "/" .. sessionid
     print("link-o-matic: trav prod. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
   elseif mypasteboard:match(travstgsession) then
     sessionid = mypasteboard:match(travstgsession .. "/([%w%-]*)")
-    tag = "S:" .. sessionid
+    tag = "Stg:" .. sessionid
     mypasteboard = travstgsession .. "/" .. sessionid
     print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
