@@ -29,6 +29,7 @@ change log:
   2024-09-12 - add subrole to HyperF
   2025-08-04 - add Traversal laptop ("Jason’s MacBook Pro") so it loads worktools
   2025-09-03 - remove more tdh and move my_work_email to worktools
+  2026-01-12 - add hyper-P for clipboard-to-preview
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -154,6 +155,15 @@ hotkey_HyperS = hs.hotkey.bind(hyper, "S", "Is sleep disabled?", function()
     hs.alert.show("DisplayIdle disabled. (No sleep till Brooklyn.)")
   else
     hs.alert.show("DisplayIdle enabled. (When is naptime?)")
+  end
+end)
+
+-- Added 2026-01-12
+hotkey_HyperP = hs.hotkey.bind(hyper, "P", "Clipboard-to-Preview", function()
+  diditrun, clipboard_has_image = hs.osascript.applescriptFromFile("clipboard-to-preview.applescript")
+  print(clipboard_has_image)
+  if clipboard_has_image == "No image found in the clipboard." then
+    hs.alert.show(clipboard_has_image)
   end
 end)
 
