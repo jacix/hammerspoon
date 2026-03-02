@@ -49,7 +49,8 @@ change log
   2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
   2025-12-19 - Hyper-L: handle trav prod and staging, also paste into Safari for google sheets. Make it more specific later
   2026-01-05 - Hyper-L: fix typo in travstgsession elseif
-  2026-01-06 - Hyler-L: handle Slack, and Notion; more TDH cleanup; swap MicMute launch method
+  2026-01-06 - Hyper-L: handle Slack, and Notion; more TDH cleanup; swap MicMute launch method
+  2026-03-02 - Hyper-L: handle github PRs
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -74,6 +75,9 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   if not mypasteboard:match("https?://") then
     hs.alert.show("Clipboard ain't right.\n clipboard: " .. mypasteboard , 4)
     return
+  elseif mypasteboard:match("https://github.com/InteractionLabs/.*/pull") then
+    print("link-o-matic: github-pr")
+    tag = mypasteboard:gsub("https://github.com/InteractionLabs/","PR:"):gsub("/pull/","/")
   elseif mypasteboard:match("https://github.com") then
     print("link-o-matic: github")
     tag=mypasteboard:gsub("https://github.com/","github/")
