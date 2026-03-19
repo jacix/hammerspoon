@@ -51,6 +51,7 @@ change log
   2026-01-05 - Hyper-L: fix typo in travstgsession elseif
   2026-01-06 - Hyper-L: handle Slack, and Notion; more TDH cleanup; swap MicMute launch method
   2026-03-02 - Hyper-L: handle github PRs
+  2026-03-19 - Hyper-L: instead of Safari in app name, look for "Google Sheets" in window title
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -123,7 +124,8 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.eventtap.keyStroke({}, "tab", focused_app)
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "return", focused_app)
-  elseif (frontmost_app_title == "Safari") then
+  --elseif (frontmost_app_title == "Safari") then
+  elseif focused_window_title:match("Google Sheets") then 
     hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "tab", focused_app)
