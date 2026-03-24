@@ -52,6 +52,7 @@ change log
   2026-01-06 - Hyper-L: handle Slack, and Notion; more TDH cleanup; swap MicMute launch method
   2026-03-02 - Hyper-L: handle github PRs
   2026-03-19 - Hyper-L: instead of Safari in app name, look for "Google Sheets" in window title
+  2026-03-24 - Hyper-L: handle cap1 URLs
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -71,6 +72,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- set variables
   travprodsession = "https://app.traversal.com/session"
   travstgsession = "https://staging.traversal.com/session"
+  travcaponesession = "https://capitalone.traversal.com/session"
   -- craft a tag from the pasteboard, removing the trailing slash if present
   mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")
   if not mypasteboard:match("https?://") then
@@ -92,6 +94,11 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "Stg:" .. sessionid
     mypasteboard = travstgsession .. "/" .. sessionid
     print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
+  elseif mypasteboard:match(travcaponesession) then
+    sessionid = mypasteboard:match(travcaponesession .. "/([%w%-]*)")
+    tag = "Cap1:" .. sessionid
+    mypasteboard = travcaponesession .. "/" .. sessionid
+    print("link-o-matic: trav Cap1. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
     tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
