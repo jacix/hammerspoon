@@ -49,10 +49,11 @@ change log
   2025-12-16 - URLDispatcher: app.traversal.com, staging.traversal.com open with Chrome
   2025-12-19 - Hyper-L: handle trav prod and staging, also paste into Safari for google sheets. Make it more specific later
   2026-01-05 - Hyper-L: fix typo in travstgsession elseif
-  2026-01-06 - Hyper-L: handle Slack, and Notion; more TDH cleanup; swap MicMute launch method
+  2026-01-06 - Hyper-L: handle paste into Slack and Notion; more TDH cleanup; swap MicMute launch method
   2026-03-02 - Hyper-L: handle github PRs
   2026-03-19 - Hyper-L: instead of Safari in app name, look for "Google Sheets" in window title
   2026-03-24 - Hyper-L: handle cap1 URLs
+  2026-03-30 - Hyper-L: handle Notion URLs
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -99,6 +100,9 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "Cap1:" .. sessionid
     mypasteboard = travcaponesession .. "/" .. sessionid
     print("link-o-matic: trav Cap1. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
+  elseif mypasteboard:match("https://www.notion.so") then
+    print("link-o-matic: notion")
+    tag = "Notion:" .. mypasteboard:match("notion%.so/([%a%d%-]+)%-%x+$")
   elseif mypasteboard:match("https://.*console.aws.amazon.com") then
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
     tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
