@@ -30,6 +30,7 @@ change log:
   2025-08-04 - add Traversal laptop ("Jason’s MacBook Pro") so it loads worktools
   2025-09-03 - remove more tdh and move my_work_email to worktools
   2026-01-12 - add hyper-P for clipboard-to-preview
+  2026-04-01 - disabled hyper-P. Hotkey added to shortcut directly.
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -158,7 +159,8 @@ hotkey_HyperS = hs.hotkey.bind(hyper, "S", "Is sleep disabled?", function()
   end
 end)
 
--- Added 2026-01-12
+-- Added 2026-01-12, 
+--[[ disabled 2026-04-01. Added hotkey to shortcut itself
 hotkey_HyperP = hs.hotkey.bind(hyper, "P", "Clipboard-to-Preview", function()
   diditrun, clipboard_has_image = hs.osascript.applescriptFromFile("clipboard-to-preview.applescript")
   print(clipboard_has_image)
@@ -166,6 +168,7 @@ hotkey_HyperP = hs.hotkey.bind(hyper, "P", "Clipboard-to-Preview", function()
     hs.alert.show(clipboard_has_image)
   end
 end)
+--]]
 
 -- work-in-progress to get a list of windows for finding focus and such; useful? dunno
 --[[
