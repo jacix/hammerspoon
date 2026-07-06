@@ -54,13 +54,12 @@ change log
   2026-03-19 - Hyper-L: instead of Safari in app name, look for "Google Sheets" in window title
   2026-03-24 - Hyper-L: handle cap1 URLs
   2026-03-30 - Hyper-L: handle Notion URLs
+  2026-07-07 - Hyoer-L: Much cleaner paste for Notion and Slack (thanks Claude!); Use more locals; nil-safe the variables; add traversal dev
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
 primaryScreen=hs.screen.primaryScreen()
 my_work_email  = "jason@traversal.com"
--- how long to hold a shift-alt arrowkey in the hyperL loop
-hyperl_arrow_loop_delay = 120000
 
 -- please allow me to introduce myself
 hs.alert.show("Loading work tools")
@@ -73,6 +72,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- set variables
   travprodsession = "https://app.traversal.com/session"
   travstgsession = "https://staging.traversal.com/session"
+  travdevsession = "https://dev.traversal.com/session"
   travcaponesession = "https://capitalone.traversal.com/session"
   -- craft a tag from the pasteboard, removing the trailing slash if present
   mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")
@@ -95,6 +95,11 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     tag = "Stg:" .. sessionid
     mypasteboard = travstgsession .. "/" .. sessionid
     print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
+  elseif mypasteboard:match(travdevsession) then
+    sessionid = mypasteboard:match(travdevsession .. "/([%w%-]*)")
+    tag = "Dev:" .. sessionid
+    mypasteboard = travdevsession .. "/" .. sessionid
+    print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
   elseif mypasteboard:match(travcaponesession) then
     sessionid = mypasteboard:match(travcaponesession .. "/([%w%-]*)")
     tag = "Cap1:" .. sessionid
@@ -116,44 +121,38 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     return
   end
   -- create a nicely-formatted link in various applications
-  focused_window = hs.window.focusedWindow()
-  focused_window_title = focused_window:title()
-  frontmost_app = hs.application.frontmostApplication()
-  frontmost_app_title = frontmost_app:title()
-  if frontmost_app_title:match("Slack") then
-    hs.eventtap.keyStroke({"shift", "cmd"}, "u", focused_app)
-    hs.eventtap.keyStrokes(tag, focused_app)
-    hs.eventtap.keyStroke({}, "tab", focused_app)
-    hs.eventtap.keyStrokes(mypasteboard, focused_app)
-    hs.eventtap.keyStroke({}, "return", focused_app)
-  elseif (frontmost_app_title == "Microsoft Excel") then
-    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+  local focused_window = hs.window.focusedWindow()
+  -- if focused_window is nil, focused_window_title becomes "" to prevent an error
+  local focused_window_title = focused_window and focused_window:title() or ""
+  local frontmost_app = hs.application.frontmostApplication()
+  local frontmost_app_title = frontmost_app:title()
+  if (frontmost_app_title == "Microsoft Excel") then
+    hs.eventtap.keyStroke({"cmd"}, "k")
     hs.eventtap.keyStrokes(mypasteboard)
-    hs.eventtap.keyStroke({}, "tab", focused_app)
-    hs.eventtap.keyStroke({}, "tab", focused_app)
-    hs.eventtap.keyStroke({}, "tab", focused_app)
-    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab")
+    hs.eventtap.keyStroke({}, "tab")
+    hs.eventtap.keyStroke({}, "tab")
+    hs.eventtap.keyStroke({}, "tab")
     hs.eventtap.keyStrokes(tag)
-    hs.eventtap.keyStroke({}, "return", focused_app)
-  --elseif (frontmost_app_title == "Safari") then
+    hs.eventtap.keyStroke({}, "return")
   elseif focused_window_title:match("Google Sheets") then 
-    hs.eventtap.keyStroke({"cmd"}, "k", focused_app)
+    hs.eventtap.keyStroke({"cmd"}, "k")
     hs.eventtap.keyStrokes(tag)
-    hs.eventtap.keyStroke({}, "tab", focused_app)
+    hs.eventtap.keyStroke({}, "tab")
     hs.eventtap.keyStrokes(mypasteboard)
     hs.eventtap.keyStroke({}, "return")
     hs.eventtap.keyStroke({}, "return")
-  elseif (frontmost_app_title == "Notion") then
-    hs.eventtap.keyStrokes(tag)
-    local count = 1
-    print("loop delay = " .. hyperl_arrow_loop_delay)
-    while count <= 11 do
-      hs.eventtap.keyStroke({"alt", "shift"}, "left", hyperl_arrow_loop_delay, focused_app)
-      count = count + 1
-    end
-    -- eventtap.keyStrokes'ing the pasteboard overwrites the tag but cmd-v doesn't. Thanks Notion.
-    hs.eventtap.keyStroke({"cmd"}, "v", hyperl_arrow_loop_delay, focused_app)
-    hs.eventtap.keyStroke({}, "space", hyperl_arrow_loop_delay, focused_app)
+  elseif (frontmost_app_title == "Notion" or frontmost_app_title:match("Slack") ) then
+    -- Notion and Slack prefer public.html flavor if available in the clipboard, so populate that in addition to the standard public.utf8-plain-text. 
+    -- They'll grab the full, tagged URL while other applications see the standard flavor. see it in the HS console with
+    -- return hs.inspect(hs.pasteboard.readAllData())
+    hs.pasteboard.writeAllData({
+      ["public.html"]            = ('<a href="%s">%s</a>'):format(mypasteboard, tag),
+      ["public.utf8-plain-text"] = mypasteboard,
+    })
+    hs.eventtap.keyStroke({"cmd"}, "v")
+    hs.eventtap.keyStroke({}, "space")   -- dismiss Notion's "fancify" offer and add the necessary space
+    hs.timer.doAfter(0.3, function() hs.pasteboard.setContents(mypasteboard) end)  -- leave only the URL
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
   end
@@ -249,4 +248,22 @@ hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
       print("frontmost app is not Safari, it's " .. frontmost_app_title)
    end
 end)
+=====================================
+2026-07-06
+removed from hyper-L and kept here for future reference
+--  if frontmost_app_title:match("Slack") then
+--    hs.eventtap.keyStroke({"shift", "cmd"}, "u")
+--    hs.eventtap.keyStrokes(tag)
+--    hs.eventtap.keyStroke({}, "tab")
+--    hs.eventtap.keyStrokes(mypasteboard)
+--    hs.eventtap.keyStroke({}, "return")
+------------- 
+also removed from hyper-L, anotehr way to do the Notion/Slack paste, but clumsier and with a race condition on the paste
+--    local hold_url = mypasteboard
+--    hs.pasteboard.writeDataForUTI(nil, "public.html",
+--        ('<a href="%s">%s</a>'):format(mypasteboard, tag))
+--    hs.eventtap.keyStroke({"cmd"}, "v")
+--    hs.pasteboard.setContents(hold_url)
+--    hs.eventtap.keyStroke({},"escape")
+
 ]]--

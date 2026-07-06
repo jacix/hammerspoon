@@ -31,7 +31,8 @@ change log:
   2025-09-03 - remove more tdh and move my_work_email to worktools
   2026-01-12 - add hyper-P for clipboard-to-preview
   2026-04-01 - disabled hyper-P. Hotkey added to shortcut directly.
-  2026-07-06 - require hs.ipc and install `hs` CLI in ~/bin/
+  2026-07-06 - require hs.ipc and install `hs` CLI in ~/bin; 
+				 - Properly add comments to Install:andUse (use message = "comment"), reload, hyper-v, cheetsheat
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -46,8 +47,10 @@ clipboardtool_max_entry_size = 1024
 ----------------------------------------------------------------------------------------------
 -- 2026-07-06 - enable IPC and hs CLI - also helps Claude)
 require("hs.ipc")
-os.execute('mkdir -p "$HOME/share/man/man1"')
-hs.ipc.cliInstall(os.getenv("HOME"),false)
+if not hs.ipc.cliStatus(os.getenv("HOME"), true) then
+  os.execute('mkdir -p "$HOME/share/man/man1"')
+  hs.ipc.cliInstall(os.getenv("HOME"), true)
+end
 
 -- load some spoons
 hs.loadSpoon("SpoonInstall")
@@ -59,7 +62,7 @@ Install:updateRepo('default')
 hs.loadSpoon("FadeLogo"):start()
 
 -- hs.loadSpoon("ReloadConfiguration"):start()
-Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hyper, "R" }, "Reload" }})
+Install:andUse("ReloadConfiguration", { hotkeys = { reloadConfiguration = { hyper, "R", message = "Reload" } }})
 
 ----------------------------------------------------------------------------------------------
 -- determine my hostname, so I know what to load
@@ -79,12 +82,12 @@ end
 if myhostname ~= "vader" then
   Install:andUse("ClipboardTool", {
     config = { menubar_title = "\u{1f4ce}", hist_size = clipboardtool_hist_size, max_entry_size=clipboardtool_max_entry_size },
-    hotkeys = { show_clipboard = { hyper, "V" }}
+    hotkeys = { show_clipboard = { hyper, "V", message = "Clipboard Tool" }}
   })
   spoon.ClipboardTool:start()
 end
 
-Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", "barf" } } })
+Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", message = "Cheat sheet" } } })
 
 ----------------------------------------------------------------------------------------------
 -- pull items from keychain
@@ -122,13 +125,38 @@ hotkey_HyperH = hs.hotkey.showHotkeys(hyper, "H")
 -- show the name of the front-most application. Good for troubleshooting.
 hotkey_HyperF = hs.hotkey.bind(hyper, "F", "front-most app+window; focused window", function()
   -- These calls can be made in alert.show, but for troubleshooting you can ref them in the console
-  frontmost_application = hs.application.frontmostApplication()
-  frontmost_window = hs.window.frontmostWindow()
-  focused_window = hs.window.focusedWindow()
-  relative_mouse = hs.mouse.getRelativePosition()
-  absolute_mouse = hs.mouse.absolutePosition()
-  print("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n- frontmost_win pid, id, role, subrole: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "," .. frontmost_window:subrole() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"])
-  hs.alert.show("- frontmost_app bundleID: " .. frontmost_application:bundleID() .. "\n- frontmost_app title: " .. frontmost_application:title() .. "\n- frontmost_app pid, role: " .. frontmost_application:pid() .. ", " .. frontmost_application:role() .. "\n- frontmost_win title: " .. frontmost_window:title() .. "\n- frontmost_win pid, id, role, subrole: " .. frontmost_window:pid() .. ", " .. frontmost_window:id() .. ", " .. frontmost_window:role() .. "," .. frontmost_window:subrole() .. "\n- focused_win title: " .. focused_window:title() .. "\n- Mouse relative: x = " .. relative_mouse["x"] .. ", y = " .. relative_mouse["y"] .. "  //  absolute: x = " .. absolute_mouse["x"] .. ", y = " .. absolute_mouse["y"], 8)
+  local fa   = hs.application.frontmostApplication()
+  local fw   = hs.window.frontmostWindow()
+  local focw = hs.window.focusedWindow()
+  local rm   = hs.mouse.getRelativePosition()
+  local am   = hs.mouse.absolutePosition()
+
+  local lines = {}
+  if fa then
+    lines[#lines+1] = string.format(
+      "- frontmost_app bundleID: %s\n- frontmost_app title: %s\n- frontmost_app pid, role: %s, %s",
+      fa:bundleID(), fa:title(), fa:pid(), fa:role())
+  else
+    lines[#lines+1] = "- frontmost_app: (none)"
+  end
+  if fw then
+    lines[#lines+1] = string.format(
+      "- frontmost_win title: %s\n- frontmost_win pid, id, role, subrole: %s, %s, %s, %s",
+      fw:title(), fw:pid(), fw:id(), fw:role(), fw:subrole())
+  else
+    lines[#lines+1] = "- frontmost_win: (none)"
+  end
+  if focw then
+    lines[#lines+1] = "- focused_win title: " .. focw:title()
+  else
+    lines[#lines+1] = "- focused_win: (none)"
+  end
+  lines[#lines+1] = string.format(
+    "- Mouse relative: x = %s, y = %s  //  absolute: x = %s, y = %s", rm.x, rm.y, am.x, am.y)
+
+  local msg = table.concat(lines, "\n")
+  print(msg)
+  hs.alert.show(msg, 8)
 end)
 
 -- Create menubar item to toggle disabling of sleep, create URLs to call from scripts
