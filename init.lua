@@ -33,6 +33,7 @@ change log:
   2026-04-01 - disabled hyper-P. Hotkey added to shortcut directly.
   2026-07-06 - require hs.ipc and install `hs` CLI in ~/bin; 
 				 - Properly add comments to Install:andUse (use message = "comment"), reload, hyper-v, cheetsheat
+             - Much cleaner hyper-F with nil-safe variables
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
