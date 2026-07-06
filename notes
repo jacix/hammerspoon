@@ -61,3 +61,8 @@ Fetch a password from keychain using spoon Keychain
     * name (-l) -> label
     * where (-s) -> service
 
+====================================================================
+2026-07-06
+If dateenheimer gets stuck, run this in the console:
+local x = hs.hotkey.bind({}, "f19", function() end); x:delete()
+

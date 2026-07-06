@@ -31,6 +31,7 @@ change log:
   2025-09-03 - remove more tdh and move my_work_email to worktools
   2026-01-12 - add hyper-P for clipboard-to-preview
   2026-04-01 - disabled hyper-P. Hotkey added to shortcut directly.
+  2026-07-06 - require hs.ipc and install `hs` CLI in ~/bin/
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -43,6 +44,11 @@ clipboardtool_hist_size = 50
 clipboardtool_max_entry_size = 1024
 
 ----------------------------------------------------------------------------------------------
+-- 2026-07-06 - enable IPC and hs CLI - also helps Claude)
+require("hs.ipc")
+os.execute('mkdir -p "$HOME/share/man/man1"')
+hs.ipc.cliInstall(os.getenv("HOME"),false)
+
 -- load some spoons
 hs.loadSpoon("SpoonInstall")
 Install=spoon.SpoonInstall
