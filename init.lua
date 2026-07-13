@@ -31,9 +31,11 @@ change log:
   2025-09-03 - remove more tdh and move my_work_email to worktools
   2026-01-12 - add hyper-P for clipboard-to-preview
   2026-04-01 - disabled hyper-P. Hotkey added to shortcut directly.
-  2026-07-06 - require hs.ipc and install `hs` CLI in ~/bin; 
+  2026-07-06 - require hs.ipc and install `hs` CLI in ~/bin;
 				 - Properly add comments to Install:andUse (use message = "comment"), reload, hyper-v, cheetsheat
              - Much cleaner hyper-F with nil-safe variables
+  2026-07-08 - AClock from Hyper-C to Hyper-T (for time) ; add hyper-C for clipboard reveal
+             - stop updating the repo then installing keychain and recursivebinder from git every time
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -56,9 +58,10 @@ end
 -- load some spoons
 hs.loadSpoon("SpoonInstall")
 Install=spoon.SpoonInstall
--- update the default spoons repo (hammerspoon.org/Spoons)
-Install:updateRepo('default')
--- aka: spoon.SpoonInstall:updateRepo('default')
+-- # Disabled 2026-07-08 because overkill - run this in the console if you want to update
+-- # update the default spoons repo (hammerspoon.org/Spoons)
+-- Install:updateRepo('default')
+-- # aka: spoon.SpoonInstall:updateRepo('default')
 
 hs.loadSpoon("FadeLogo"):start()
 
@@ -92,13 +95,14 @@ Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", message = "Cheat s
 
 ----------------------------------------------------------------------------------------------
 -- pull items from keychain
--- the following two lines could be replaced by: Install:andUse("Keychain")
-spoon.SpoonInstall:installSpoonFromRepo("Keychain")
-hs.spoons.use("Keychain")
+-- # disabled 2026-07-08 because overkill
+-- spoon.SpoonInstall:installSpoonFromRepo("Keychain")
+-- hs.spoons.use("Keychain")
+Install:andUse("Keychain")
 
 ----- recursive binder - this is going to take more time to grok, so start with a datenheimer
 -- https://nethuml.github.io/posts/2022/04/hammerspoon-global-leader-key/
-Install:installSpoonFromRepo("RecursiveBinder")
+Install:andUse("RecursiveBinder")
 local recursives = require("recursives")
 --[[
 spoon.RecursiveBinder.helperFormat = {
@@ -113,7 +117,7 @@ spoon.RecursiveBinder.helperFormat = {
 --]]
 
 hs.loadSpoon("AClock")
-spoon.AClock:init() hs.hotkey.bind(hyper, "C", "A Clock", function()
+spoon.AClock:init() hs.hotkey.bind(hyper, "T", "A Clock", function()
   spoon.AClock:toggleShow()
 end)
 ----------------------------------------------------------------------------------------------
@@ -194,8 +198,7 @@ hotkey_HyperS = hs.hotkey.bind(hyper, "S", "Is sleep disabled?", function()
   end
 end)
 
--- Added 2026-01-12, 
---[[ disabled 2026-04-01. Added hotkey to shortcut itself
+--[[ Added 2026-01-12; disabled 2026-04-01 - added hotkey directly to the shortcut
 hotkey_HyperP = hs.hotkey.bind(hyper, "P", "Clipboard-to-Preview", function()
   diditrun, clipboard_has_image = hs.osascript.applescriptFromFile("clipboard-to-preview.applescript")
   print(clipboard_has_image)
@@ -249,6 +252,133 @@ end
 hotkey_ShiftHyperM = hs.hotkey.bind(shift_hyper, "M", "MouseFinder", mouseHighlight)
 hs.hints.showTitleThresh=50
 hotkey_ShiftHyperW = hs.hotkey.bind(shift_hyper, "W", "WindowFindenheimer", function() hs.hints.windowHints() end)
+
+
+-- Show full clipboard contents in a pop-up
+-- handles for the hyper-C reveal, so a re-press (or esc) can tear the old one down
+clipboardCanvas = nil   -- the whole reveal (text box + optional image box)
+clipboardEscKey = nil   -- temporary esc-to-dismiss hotkey
+clipboardTimer  = nil   -- auto-dismiss timer
+hotkey_HyperC = hs.hotkey.bind(hyper, "C", "Clipboard reveal-all", function()
+  local function wrapText(s, width)
+    local out = {}
+    for line in (s .. "\n"):gmatch("(.-)\n") do
+      local len = utf8.len(line)
+      if not len then
+        -- invalid UTF-8 in this line: fall back to byte wrapping so we don't error
+        repeat
+          out[#out+1] = line:sub(1, width)
+          line = line:sub(width + 1)
+        until #line == 0
+      elseif len <= width then
+        out[#out+1] = line                       -- short enough, keep as-is
+      else
+        local cp = 1                             -- current start, in CODEPOINTS
+        while cp <= len do
+          local from = utf8.offset(line, cp)     -- codepoint index → byte index
+          local to = (cp + width <= len)
+                     and (utf8.offset(line, cp + width) - 1)
+                     or  #line
+          out[#out+1] = line:sub(from, to)       -- :sub still takes BYTES
+          cp = cp + width
+        end
+      end
+    end
+    return table.concat(out, "\n")
+  end
+
+  -- tear down any reveal still on screen (prevents stacked alerts/previews) and the esc key
+  local function dismissReveal()
+    if clipboardTimer  then clipboardTimer:stop();    clipboardTimer = nil end
+    if clipboardCanvas then clipboardCanvas:delete();  clipboardCanvas = nil end
+    if clipboardEscKey then clipboardEscKey:delete();  clipboardEscKey = nil end
+  end
+  dismissReveal()
+
+  -- classify each flavor: text gets wrapped/truncated; binary (images, etc.) is summarized
+  local out = {}
+  for uti, val in pairs(hs.pasteboard.readAllData()) do
+    local n = #val
+    if not utf8.len(val) then                         -- not valid UTF-8 → binary; don't dump bytes
+      out[#out+1] = string.format("%s  →  <binary, %d bytes>", uti, n)
+    elseif n > 800 then                               -- long text → truncate, then wrap
+      out[#out+1] = uti .. ":\n" .. wrapText(val:sub(1, 800), 100) .. string.format(" …(%d bytes)", n)
+    else
+      out[#out+1] = uti .. ":\n" .. wrapText(val, 100)
+    end
+  end
+
+  -- image (if any): size its preview now; it becomes a second box overlapping the text box
+  local img = hs.pasteboard.readImage()
+  local imgW, imgH
+  if img then
+    local isz = img:size()
+    out[#out+1] = string.format("(image: %.0f x %.0f)", isz.w, isz.h)
+    local maxDim = 420
+    local scale = math.min(maxDim / isz.w, maxDim / isz.h, 1)   -- shrink to fit, never upscale
+    imgW, imgH = math.floor(isz.w * scale), math.floor(isz.h * scale)
+  end
+
+  local msg = "Clipboard flavors:\n" .. table.concat(out, "\n")
+  print(msg)
+
+  -- ---- one canvas we fully own: a text box + (optionally) an overlapping, right-shifted image box ----
+  local textSize   = 28
+  local tpad, ipad = 16, 12    -- inner padding of the text box / image box
+  local overlap    = 10        -- how far the image box rides up over the text box (shows they're coupled)
+  local rightShift = 90        -- nudge the image box to the right ("feels right")
+
+  local tf = hs.drawing.getTextDrawingSize(msg, { font = ".AppleSystemUIFont", size = textSize })
+  local textW, textH = math.ceil(tf.w) + 2, math.ceil(tf.h)
+  local tw, th = textW + tpad * 2, textH + tpad * 2                 -- text box size
+
+  -- lay the boxes out in a local space (text box at origin), then normalize so nothing is negative
+  local ibx, iby, ibw, ibh = 0, 0, 0, 0
+  if img then
+    ibw, ibh = imgW + ipad * 2, imgH + ipad * 2
+    ibx = (tw - ibw) / 2 + rightShift    -- centered under the text box, then shoved right
+    iby = th - overlap                   -- top rides up into the text box
+  end
+  local margin = 14                      -- breathing room so the image-box shadow isn't clipped
+  local minX = math.min(0, ibx)
+  local W    = math.max(tw, ibx + ibw) - minX + margin * 2
+  local H    = math.max(th, iby + ibh) + margin * 2
+  local tx   = -minX + margin            -- text box local x (shifted in by the margin)
+  local ty   = margin                    -- text box local y
+  local ix   = ibx - minX + margin       -- image box local x
+  local iy   = iby + margin              -- image box local y
+
+  local ff = hs.screen.mainScreen():fullFrame()
+  clipboardCanvas = hs.canvas.new({
+    x = math.floor(ff.x + (ff.w - W) / 2),
+    y = math.floor(ff.y + (ff.h - H) / 2),
+    w = W, h = H,
+  })
+  clipboardCanvas:appendElements(
+    { type = "rectangle", action = "strokeAndFill",                -- text box (the old alert look)
+      fillColor = { white = 0, alpha = 0.8 }, strokeColor = { white = 1 }, strokeWidth = 2,
+      roundedRectRadii = { xRadius = 12, yRadius = 12 },
+      frame = { x = tx, y = ty, w = tw, h = th } },
+    { type = "text", text = msg,
+      textColor = { white = 1 }, textFont = ".AppleSystemUIFont", textSize = textSize,
+      frame = { x = tx + tpad, y = ty + tpad, w = textW, h = textH } })
+  if img then
+    clipboardCanvas:appendElements(                                -- drawn last → visibly overlaps the text box
+      { type = "rectangle", action = "strokeAndFill",
+        fillColor = { white = 0, alpha = 0.85 }, strokeColor = { white = 1 }, strokeWidth = 2,
+        roundedRectRadii = { xRadius = 12, yRadius = 12 },
+        withShadow = true,
+        shadow = { blurRadius = 8, color = { alpha = 0.5 }, offset = { h = -4, w = 4 } },
+        frame = { x = ix, y = iy, w = ibw, h = ibh } },
+      { type = "image", image = img, imageScaling = "scaleToFit",
+        frame = { x = ix + ipad, y = iy + ipad, w = imgW, h = imgH } })
+  end
+  clipboardCanvas:level(hs.canvas.windowLevels.overlay)
+  clipboardCanvas:show()
+
+  clipboardEscKey = hs.hotkey.bind({}, "escape", dismissReveal)   -- esc dismisses the whole reveal early
+  clipboardTimer  = hs.timer.doAfter(8, dismissReveal)            -- otherwise auto-dismiss after 8s
+end)
 
 -- testCallbackFn = function(result) print("Callback Result: " .. result) end
 -- or: function testCallbackFn(result) print("Callback Result: " .. result) end

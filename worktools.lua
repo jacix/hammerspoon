@@ -33,7 +33,7 @@ change log
   2024-06-04 - move spoon ClipboardTool to init.lua; use variable "hyper" where it belongs
   2024-06-11 - Hyper-L: simplify tags for github, jenkins; strip selectors off end of AWS console URLs
   2024-06-12 - Hyper-L: tighten jenkins.teladoc.io URL match; AWS tag handles "view" in addition to "sort"
-  2024-06-17 - function closePrivsReminder: check primary screen height to determine X point; wait over X instead of box 
+  2024-06-17 - function closePrivsReminder: check primary screen height to determine X point; wait over X instead of box
   2024-06-18 - function closePrivsReminder: waiting over X doesn't always work, so wait over box, move to X, click X
   2024-06-28 - add Hyper-D: rename compliance docs based on what's in the pasteboard
   2024-07-11 - Hyper-L: add jenkins-prod2.shared.aws.teladoc.com
@@ -54,7 +54,9 @@ change log
   2026-03-19 - Hyper-L: instead of Safari in app name, look for "Google Sheets" in window title
   2026-03-24 - Hyper-L: handle cap1 URLs
   2026-03-30 - Hyper-L: handle Notion URLs
-  2026-07-07 - Hyoer-L: Much cleaner paste for Notion and Slack (thanks Claude!); Use more locals; nil-safe the variables; add traversal dev
+  2026-07-07 - Hyper-L: Much cleaner paste for Notion and Slack (thanks Claude!); Use more locals; nil-safe the variables; add traversal dev
+  2026-07-08 - Hyper-M: Spoon has hand-crafted binder which ignores comments. Bind manually instead - old school.
+  2026-07-13 - Hyper-L: Cleaner, more genearlized traversal URL match with table for environments instead of repeated if/thens. More attention to local vs. global vars
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -65,17 +67,20 @@ my_work_email  = "jason@traversal.com"
 hs.alert.show("Loading work tools")
 ----------------------------------------------------------------------------------------------
 -- take a URL from the clipboard and make an application-friendly hyperlink
--- to do:
 hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
-  -- clear variables
-  pr, repo, tag = nil
-  -- set variables
-  travprodsession = "https://app.traversal.com/session"
-  travstgsession = "https://staging.traversal.com/session"
-  travdevsession = "https://dev.traversal.com/session"
-  travcaponesession = "https://capitalone.traversal.com/session"
-  -- craft a tag from the pasteboard, removing the trailing slash if present
+  -- Table of traversal environments. Format: (environment).traversal.com/session = tag_prefix
+  local trav_tags = {
+    app        = "prd",
+    staging    = "stg",
+    dev        = "dev",
+    capitalone = "cap1",
+    testing-3  = "test3",
+    payward    = "payward",
+  }
+  -- copy pasteboard into temporary variable, removing trailing newline and slash if present
   mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")
+  -- craft a tag from mypasteboard
+  tag = nil
   if not mypasteboard:match("https?://") then
     hs.alert.show("Clipboard ain't right.\n clipboard: " .. mypasteboard , 4)
     return
@@ -85,26 +90,11 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   elseif mypasteboard:match("https://github.com") then
     print("link-o-matic: github")
     tag=mypasteboard:gsub("https://github.com/","github/")
-  elseif mypasteboard:match(travprodsession) then
-    sessionid = mypasteboard:match(travprodsession .. "/([%w%-]*)")
-    tag = "Prd:" .. sessionid
-    mypasteboard = travprodsession .. "/" .. sessionid
-    print("link-o-matic: trav prod. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
-  elseif mypasteboard:match(travstgsession) then
-    sessionid = mypasteboard:match(travstgsession .. "/([%w%-]*)")
-    tag = "Stg:" .. sessionid
-    mypasteboard = travstgsession .. "/" .. sessionid
-    print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
-  elseif mypasteboard:match(travdevsession) then
-    sessionid = mypasteboard:match(travdevsession .. "/([%w%-]*)")
-    tag = "Dev:" .. sessionid
-    mypasteboard = travdevsession .. "/" .. sessionid
-    print("link-o-matic: trav stg. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
-  elseif mypasteboard:match(travcaponesession) then
-    sessionid = mypasteboard:match(travcaponesession .. "/([%w%-]*)")
-    tag = "Cap1:" .. sessionid
-    mypasteboard = travcaponesession .. "/" .. sessionid
-    print("link-o-matic: trav Cap1. sessionID=" .. sessionid .. " / pasteboard=" .. mypasteboard)
+  elseif mypasteboard:match("^https://([%w%-]+)%.traversal%.com/session/([%w%-]+)") then
+    local env, sessionid = mypasteboard:match("^https://([%w%-]+)%.traversal%.com/session/([%w%-]+)")
+    local prefix = trav_tags[env] or env
+    tag = prefix .. ":" .. sessionid
+    print(("link-o-matic: trav %s sessionID=%s / tag=%s / pasteboard=%s"):format(prefix, sessionid, tag, mypasteboard))
   elseif mypasteboard:match("https://www.notion.so") then
     print("link-o-matic: notion")
     tag = "Notion:" .. mypasteboard:match("notion%.so/([%a%d%-]+)%-%x+$")
@@ -112,7 +102,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     --tag = mypasteboard:match(".*=.*=(.*[0-9a-z])") -- doesn't handle sorting like "...;sort=desc:createTime"
     tag = mypasteboard:gsub(";[sv][oi][re].*",""):match(".*=(.*[0-9a-z])")
     -- also works: tag, _ = mypasteboard:gsub(";sort.*",""):gsub(".*=","")
-  elseif mypasteboard:match("https?://") then
+  else
     print("link-o-matic: URL catch-all")
     tag = string.match(mypasteboard, ".*/(.*)")
   end
@@ -135,7 +125,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.eventtap.keyStroke({}, "tab")
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "return")
-  elseif focused_window_title:match("Google Sheets") then 
+  elseif focused_window_title:match("Google Sheets") then
     hs.eventtap.keyStroke({"cmd"}, "k")
     hs.eventtap.keyStrokes(tag)
     hs.eventtap.keyStroke({}, "tab")
@@ -143,7 +133,7 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.eventtap.keyStroke({}, "return")
     hs.eventtap.keyStroke({}, "return")
   elseif (frontmost_app_title == "Notion" or frontmost_app_title:match("Slack") ) then
-    -- Notion and Slack prefer public.html flavor if available in the clipboard, so populate that in addition to the standard public.utf8-plain-text. 
+    -- Notion and Slack prefer public.html flavor if available in the clipboard, so populate that in addition to the standard public.utf8-plain-text.
     -- They'll grab the full, tagged URL while other applications see the standard flavor. see it in the HS console with
     -- return hs.inspect(hs.pasteboard.readAllData())
     hs.pasteboard.writeAllData({
@@ -164,24 +154,6 @@ hotkey_hyperJ = hs.hotkey.bind(hyper, "J", "my email", function()
 end)
 
 ----------------------------------------------------------------------------------------------
--- Teams URLs - names should be self-explanatory
-hs.urlevent.bind("teamsMuteMic",function(eventName, params)
-  hs.eventtap.keyStroke({"cmd", "shift"}, "m",hs.application.find("Microsoft Teams"))
-end)
-
-hs.urlevent.bind("teamsMuteCam",function(eventName, params)
-  hs.eventtap.keyStroke({"cmd", "shift"}, "o",hs.application.find("Microsoft Teams"))
-end)
-
-hs.urlevent.bind("teamsHangup",function(eventName, params)
-  hs.eventtap.keyStroke({"cmd", "shift"}, "h",hs.application.find("Microsoft Teams"))
-end)
-
-hs.urlevent.bind("teamsToggleHand",function(eventName, params)
-  hs.eventtap.keyStroke({"cmd", "shift"}, "k",hs.application.find("Microsoft Teams"))
-end)
-
-----------------------------------------------------------------------------------------------
 -- URL Dispatcher to send applications to Chrome when necessary
 Install:andUse("URLDispatcher", {
   config = {
@@ -195,13 +167,10 @@ Install:andUse("URLDispatcher", {
   -- Enable debug logging if you get unexpected behavior
   -- loglevel = 'debug'
 })
--- this works but no help in hyper-h
---Install:andUse("MicMute", { hotkeys = { toggle = { hyper, "M", "barf" } } })
 
--- this works, and has help with hyper-h but displays two copies of the menu bar icon
-hs.loadSpoon("MicMute")
-hs.spoons.use("MicMute")
-spoon.MicMute:init() hs.hotkey.bind(hyper, "M", "muteme", function()
+----------------------------------------------------------------------------------------------
+Install:andUse("MicMute")
+hotkey_hyperM = hs.hotkey.bind(hyper, "M", "muteme", function()
   spoon.MicMute:toggleMicMute()
 end)
 
@@ -229,41 +198,19 @@ hs.tabs.enableForApp("Teams") - https://www.hammerspoon.org/docs/hs.tabs.html
 
 ----------------------------------------------------------------------------------------------
 --[[ basement - storage and other references
--- ## archived 2025-10-23
--- added 2025-09-15
-hotkey_hyperP = hs.hotkey.bind(hyper, "P", "Pepsi-login", function()
-  focused_window = hs.window.focusedWindow()
-  frontmost_app = hs.application.frontmostApplication()
-  frontmost_app_title = frontmost_app:title()
-  focused_window_title = focused_window:title()
-  if frontmost_app_title:match("Safari") then
-      if focused_window_title:match("Enter your organization") then
-         hs.eventtap.keyStroke({}, "tab", frontmost_app)
-         hs.eventtap.keyStrokes("Pepsi", frontmost_app)
-         hs.eventtap.keyStroke({}, "return", frontmost_app)
-      else
-         print("focused window not Traversal, it's " .. frontmost_window_title)
-      end
-   else
-      print("frontmost app is not Safari, it's " .. frontmost_app_title)
-   end
-end)
-=====================================
-2026-07-06
-removed from hyper-L and kept here for future reference
+-- 2026-07-06 - removed from hyper-L and kept here for future reference
 --  if frontmost_app_title:match("Slack") then
 --    hs.eventtap.keyStroke({"shift", "cmd"}, "u")
 --    hs.eventtap.keyStrokes(tag)
 --    hs.eventtap.keyStroke({}, "tab")
 --    hs.eventtap.keyStrokes(mypasteboard)
 --    hs.eventtap.keyStroke({}, "return")
-------------- 
-also removed from hyper-L, anotehr way to do the Notion/Slack paste, but clumsier and with a race condition on the paste
+-------------
+also removed from hyper-L, another way to do the Notion/Slack paste, but clumsier and with a race condition on the paste
 --    local hold_url = mypasteboard
 --    hs.pasteboard.writeDataForUTI(nil, "public.html",
 --        ('<a href="%s">%s</a>'):format(mypasteboard, tag))
 --    hs.eventtap.keyStroke({"cmd"}, "v")
 --    hs.pasteboard.setContents(hold_url)
 --    hs.eventtap.keyStroke({},"escape")
-
 ]]--
