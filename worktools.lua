@@ -57,6 +57,7 @@ change log
   2026-07-07 - Hyper-L: Much cleaner paste for Notion and Slack (thanks Claude!); Use more locals; nil-safe the variables; add traversal dev
   2026-07-08 - Hyper-M: Spoon has hand-crafted binder which ignores comments. Bind manually instead - old school.
   2026-07-13 - Hyper-L: Cleaner, more genearlized traversal URL match with table for environments instead of repeated if/thens. More attention to local vs. global vars
+  2026-08-07 - Hyper-L: fixed typo in local trav_tags;
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -70,12 +71,12 @@ hs.alert.show("Loading work tools")
 hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
   -- Table of traversal environments. Format: (environment).traversal.com/session = tag_prefix
   local trav_tags = {
-    app        = "prd",
-    staging    = "stg",
-    dev        = "dev",
-    capitalone = "cap1",
-    testing-3  = "test3",
-    payward    = "payward",
+    app           = "prd",
+    staging       = "stg",
+    dev           = "dev",
+    capitalone    = "cap1",
+    ["testing-3"] = "test3",
+    payward       = "payward",
   }
   -- copy pasteboard into temporary variable, removing trailing newline and slash if present
   mypasteboard = hs.pasteboard.getContents():gsub("\n$",""):gsub("/$","")

@@ -36,6 +36,7 @@ change log:
              - Much cleaner hyper-F with nil-safe variables
   2026-07-08 - AClock from Hyper-C to Hyper-T (for time) ; add hyper-C for clipboard reveal
              - stop updating the repo then installing keychain and recursivebinder from git every time
+  2026-08-07 - w/claude - shift-hyperV clears clipboard entries larger than clipboard_purge_larger_than_kb; persist clipboard deletions across restarts
 --]]
 ----------------------------------------------------------------------------------------------
 -- some variables
@@ -46,6 +47,7 @@ my_email       = "hammerspoonie@jasons.us"
 -- work_logo = hs.image.imageFromPath(hs.configdir .. "/files/work_logo_2x.png")
 clipboardtool_hist_size = 50
 clipboardtool_max_entry_size = 1024
+clipboard_purge_larger_than_kb = 200
 
 ----------------------------------------------------------------------------------------------
 -- 2026-07-06 - enable IPC and hs CLI - also helps Claude)
@@ -89,6 +91,34 @@ if myhostname ~= "vader" then
     hotkeys = { show_clipboard = { hyper, "V", message = "Clipboard Tool" }}
   })
   spoon.ClipboardTool:start()
+
+  -- Fix: manageClip (right-click delete/move/reorder) never persisted its changes
+  local originalManageClip = spoon.ClipboardTool.manageClip
+  function spoon.ClipboardTool:manageClip(row, action)
+     originalManageClip(self, row, action)
+     _persistHistory()
+  end
+
+  -- Remove clipboard history entries larger than the given size (KB)
+  function spoon.ClipboardTool:purgeLargerThan(kb)
+     local maxBytes = kb * 1024
+     local rows = self:_populateChooser("")
+     local removed = 0
+     for i = #rows, 1, -1 do
+        local row = rows[i]
+        if (row.type == "text" or row.type == "image") and row.data and #row.data > maxBytes then
+           self:manageClip(i, 0)
+           removed = removed + 1
+        end
+     end
+     if self.selectorobj then self.selectorobj:refreshChoicesCallback() end
+     return removed
+  end
+
+  hotkey_ShiftHyperV = hs.hotkey.bind(shift_hyper, "V", "Purge large clipboard items", function()
+     local removed = spoon.ClipboardTool:purgeLargerThan(clipboard_purge_larger_than_kb)
+     hs.alert.show("Purged " .. removed .. " clipboard item(s) over " .. clipboard_purge_larger_than_kb .. "KB")
+  end)
 end
 
 Install:andUse("KSheet", { hotkeys = { toggle = { hyper, "/", message = "Cheat sheet" } } })
