@@ -58,6 +58,7 @@ change log
   2026-07-08 - Hyper-M: Spoon has hand-crafted binder which ignores comments. Bind manually instead - old school.
   2026-07-13 - Hyper-L: Cleaner, more genearlized traversal URL match with table for environments instead of repeated if/thens. More attention to local vs. global vars
   2026-08-07 - Hyper-L: fixed typo in local trav_tags;
+  2026-08-21 - Hyper-L: add support for github PR comment markdown
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -144,6 +145,8 @@ hotkey_hyperL = hs.hotkey.bind(hyper, "L", "Web link-enator", function()
     hs.eventtap.keyStroke({"cmd"}, "v")
     hs.eventtap.keyStroke({}, "space")   -- dismiss Notion's "fancify" offer and add the necessary space
     hs.timer.doAfter(0.3, function() hs.pasteboard.setContents(mypasteboard) end)  -- leave only the URL
+  elseif (frontmost_app_title == "Safari" and focused_window_title:match("Pull.*Request") ) then
+    hs.eventtap.keyStrokes("[" .. tag .. "](" .. mypasteboard .. ")")
   else
     hs.alert.show("Make me work with:\nApplication: " .. frontmost_app_title .. "\nFocused window: " .. focused_window_title, 4)
   end
