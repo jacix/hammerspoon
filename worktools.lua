@@ -59,6 +59,7 @@ change log
   2026-07-13 - Hyper-L: Cleaner, more genearlized traversal URL match with table for environments instead of repeated if/thens. More attention to local vs. global vars
   2026-08-07 - Hyper-L: fixed typo in local trav_tags;
   2026-08-21 - Hyper-L: add support for github PR comment markdown
+  2026-09-04 - URLDispatcher: add dev.traversal.com, docs.google.com, doordash.com
 --]]
 
 -- variables used by multiple bindings, or just here for convenience
@@ -162,6 +163,9 @@ end)
 Install:andUse("URLDispatcher", {
   config = {
     url_patterns = {
+      { "doordash.com", "com.google.Chrome" },
+      { "docs.google.com", "com.google.Chrome" },
+      { "dev.traversal.com", "com.google.Chrome" },
       { "staging.traversal.com", "com.google.Chrome" },
       { "app.traversal.com", "com.google.Chrome" }
     },
